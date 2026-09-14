@@ -1,630 +1,3705 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#667eea">
-<title>Soccer Stat Tracker Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#667eea;--primary-dark:#5568d3;--success:#48bb78;--warning:#ed8936;
-  --danger:#f56565;--text:#252a34;--muted:#6b7280;--bg:#f4f6fb;--card:#fff;
-  --border:#e1e5ee;--soft:#f8f9fc;--shadow:0 8px 30px rgba(31,41,55,.12);
-}
-html{scroll-behavior:smooth}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-  min-height:100vh;padding:10px;color:var(--text);
-}
-button,input{font:inherit}
-button{touch-action:manipulation}
-.container{max-width:1400px;margin:auto;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 12px 45px rgba(0,0,0,.22)}
-.header{
-  background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 20px;
-  position:sticky;top:0;z-index:50
-}
-.header-top{display:flex;align-items:center;justify-content:space-between;gap:15px}
-.header h1{font-size:1.55rem}
-.header-actions{display:flex;align-items:center;gap:8px}
-.timer-display{text-align:center;font:700 2.8rem/1 "Courier New",monospace;letter-spacing:2px;margin-top:10px}
-.current-period{text-align:center;font-size:.9rem;opacity:.92;margin-top:6px}
-.scoreboard{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 20px;
-  background:#fff;border-bottom:1px solid var(--border);position:sticky;top:108px;z-index:40
-}
-.score-card{background:var(--soft);border:1px solid var(--border);border-radius:10px;text-align:center;padding:8px 5px}
-.score-card .value{font-size:1.55rem;font-weight:800;color:var(--primary)}
-.score-card .label{font-size:.72rem;color:var(--muted);font-weight:700}
-.content{display:grid;grid-template-columns:minmax(340px,1fr) minmax(420px,1.1fr);gap:18px;padding:18px}
-.section{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:18px}
-.section h2{font-size:1.2rem;margin-bottom:14px;border-bottom:2px solid var(--primary);padding-bottom:9px}
-.section h3{font-size:.98rem;margin:16px 0 9px}
-.game-info{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.info-input{display:flex;flex-direction:column}
-.info-input label{font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:5px}
-input[type=text]{
-  width:100%;padding:11px;border:2px solid var(--border);border-radius:8px;background:#fff;
-  color:var(--text);outline:none
-}
-input[type=text]:focus{border-color:var(--primary)}
-.button-group,.timer-controls{display:flex;gap:8px;flex-wrap:wrap}
-.btn{
-  border:0;border-radius:8px;padding:11px 13px;font-weight:700;cursor:pointer;
-  transition:.15s;min-height:44px
-}
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{background:var(--primary);color:#fff}.btn-success{background:var(--success);color:#fff}
-.btn-warning{background:var(--warning);color:#fff}.btn-danger{background:var(--danger);color:#fff}
-.btn-secondary{background:#e8ebf2;color:#303746}.btn-small{min-height:36px;padding:8px 11px;font-size:.85rem}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.field-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.field-position{
-  border:2px solid var(--border);border-radius:8px;background:#fff;min-height:48px;
-  display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer
-}
-.field-position.selected{background:var(--primary);border-color:var(--primary);color:#fff}
-.input-group{display:flex;gap:7px}
-.input-group input{flex:1}
-.player-list{display:flex;flex-wrap:wrap;gap:7px;min-height:30px}
-.player-tag{
-  display:flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--primary);
-  color:var(--primary);padding:7px 10px;border-radius:20px;font-weight:700;font-size:.86rem
-}
-.player-tag button{border:0;background:none;color:inherit;cursor:pointer;font-weight:900}
-.action-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
-.action-btn{
-  border:2px solid var(--border);background:#fff;border-radius:10px;padding:16px 10px;
-  font-weight:800;cursor:pointer;min-height:58px
-}
-.action-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
-.action-btn.custom{border-style:dashed}
-.custom-actions{margin-top:9px}
-.player-select-area{
-  min-height:180px;background:#fff;border:2px dashed var(--border);border-radius:10px;
-  padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px
-}
-.player-btn{
-  border:2px solid var(--primary);background:#f0f4ff;color:var(--primary);
-  border-radius:9px;padding:14px 8px;font-weight:800;cursor:pointer;min-height:52px
-}
-.player-btn:active{transform:scale(.98)}
-.selected-action{
-  margin-top:12px;padding:12px;background:#fff;border-left:4px solid var(--success);
-  border-radius:8px;text-align:center;font-weight:800
-}
-.quick-stats{margin-top:18px}
-.player-stat{
-  background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px
-}
-.player-stat-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
-.player-stat-name{font-weight:800}
-.player-stat-total{background:var(--primary);color:#fff;border-radius:14px;padding:3px 9px;font-size:.78rem}
-.mini-stats{display:flex;flex-wrap:wrap;gap:5px}
-.mini-stat{font-size:.72rem;background:var(--soft);padding:4px 7px;border-radius:6px;color:#4b5563}
-.recent-wrap{background:#fff;border-radius:9px;border:1px solid var(--border);padding:9px;max-height:310px;overflow:auto}
-.action-item{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px;border-bottom:1px solid var(--border);font-size:.85rem
-}
-.action-item:last-child{border-bottom:0}
-.action-main{min-width:0}.action-main strong{display:block}.action-main span{color:var(--muted);font-size:.75rem}
-.action-item button{border:0;background:var(--danger);color:#fff;border-radius:5px;padding:5px 7px;cursor:pointer}
-.bottom-actions{padding:0 18px 18px}
-.empty{text-align:center;color:#9ca3af;padding:20px 8px}
-.modal{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:1000;
-  align-items:center;justify-content:center;padding:15px
-}
-.modal.active{display:flex}
-.modal-content{
-  width:min(900px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;
-  padding:20px;box-shadow:var(--shadow)
-}
-.modal-content.small{max-width:500px}
-.modal-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
-.close-btn{border:0;background:#eee;border-radius:50%;width:36px;height:36px;cursor:pointer;font-weight:900}
-.report-section{margin-bottom:22px}
-.report-section h3{background:var(--primary);color:#fff;padding:10px;border-radius:7px;margin-bottom:10px}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.stat-item{background:var(--soft);padding:10px;border-radius:7px;text-align:center}
-.stat-label{font-size:.76rem;color:var(--muted)}.stat-value{font-size:1.25rem;font-weight:800;color:var(--primary)}
-.report-table{width:100%;border-collapse:collapse}.report-table th,.report-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
-.report-table th{background:var(--soft)}
-.history-item{padding:12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}
-.history-meta{font-size:.82rem}.history-meta strong{display:block}
-.history-buttons{display:flex;gap:6px}
-.toggle-switch{position:relative;width:46px;height:24px;display:inline-block}
-.toggle-switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:#bbb;border-radius:20px;cursor:pointer}
-.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
-.toggle-switch input:checked+.slider{background:#fff}.toggle-switch input:checked+.slider:before{transform:translateX(22px);background:var(--primary)}
-.custom-action-row{display:flex;gap:7px;margin-top:7px}.custom-action-row input{flex:1}
-@media(max-width:900px){
-  .content{grid-template-columns:1fr}
-  .scoreboard{top:103px}
-}
-@media(max-width:600px){
-  body{padding:0;background:var(--bg)}
-  .container{border-radius:0;min-height:100vh}
-  .header{padding:12px}.header h1{font-size:1.05rem}.timer-display{font-size:2.2rem}
-  .scoreboard{top:91px;padding:8px 8px;gap:5px}
-  .score-card{padding:6px 2px}.score-card .value{font-size:1.25rem}.score-card .label{font-size:.6rem}
-  .content{padding:9px;gap:9px}.section{padding:12px}
-  .game-info{grid-template-columns:1fr}.action-buttons{grid-template-columns:repeat(2,1fr)}
-  .action-btn{padding:13px 6px;min-height:62px;font-size:.84rem}
-  .player-select-area{grid-template-columns:repeat(2,1fr);min-height:160px}
-  .player-btn{padding:12px 5px;font-size:.82rem}
-  .input-group{flex-direction:column}.input-group .btn{width:100%}
-  .bottom-actions{padding:0 9px 9px}.stats-grid{grid-template-columns:1fr 1fr}
-  .history-item{align-items:flex-start;flex-direction:column}.history-buttons{width:100%}.history-buttons .btn{flex:1}
-}
-@media(min-width:901px) and (max-width:1200px){
-  .content{grid-template-columns:1fr 1fr}
-}
-@media(min-width:1201px){
-  .content{grid-template-columns:480px 1fr}
-}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
-@media print{
-  body{background:#fff;padding:0}.container{box-shadow:none;max-width:none}
-  .header{position:static}.scoreboard{position:static}
-  .bottom-actions,.header-actions,.timer-controls,.input-group,.field-selector,.action-buttons,
-  .player-select-area,.selected-action,.recent-wrap,.btn-group-horizontal{display:none!important}
-  .content{grid-template-columns:1fr;padding:10px}.section{border:0}
-}
-.dark-mode{--text:#e5e7eb;--muted:#aeb5c2;--bg:#111827;--card:#1f2937;--border:#374151;--soft:#273244}
-.dark-mode body{background:#0f172a}.dark-mode .scoreboard,.dark-mode .section,.dark-mode .modal-content{background:var(--card)}
-.dark-mode .score-card,.dark-mode .stat-item,.dark-mode .player-stat,.dark-mode .recent-wrap,
-.dark-mode .action-btn,.dark-mode .field-position,.dark-mode .player-select-area,.dark-mode .player-btn,
-.dark-mode .selected-action,.dark-mode input[type=text]{background:#273244;color:var(--text)}
-.dark-mode .player-tag{background:#273244}.dark-mode .btn-secondary{background:#374151;color:#fff}
-</style>
+    <title>Soccer Stat Tracker Pro</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .current-period {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(237, 137, 54, 0.4);
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 0.85em;
+            min-width: 60px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .player-tag {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-tag button {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-tag button:hover {
+            color: #f56565;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            position: relative;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .custom-action-btn {
+            border-style: dashed;
+        }
+
+        .custom-action-delete {
+            position: absolute;
+            top: 4px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            background: #f56565;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            line-height: 20px;
+            padding: 0;
+            display: none;
+        }
+
+        .action-btn.custom:hover .custom-action-delete {
+            display: block;
+        }
+
+        .new-action-btn {
+            background: #f8f9fa;
+            border: 2px dashed #48bb78;
+            color: #38a169;
+        }
+
+        .new-action-btn:hover {
+            background: #eafaf1;
+            border-color: #38a169;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .player-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .player-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .player-btn {
+            padding: 15px;
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .player-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats-summary {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stats-summary h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .report-section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .report-section h3 {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .report-table th {
+            background: #f0f4ff;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+            color: #333;
+        }
+
+        .report-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .report-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .btn-group-horizontal {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .btn-group-horizontal {
+                flex-direction: column;
+            }
+        }
+
+        .stats-full-width {
+            grid-column: 1 / -1;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timer-controls .btn {
+            flex: 1;
+        }
+
+        .period-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .container {
+            background: #2d2d2d;
+        }
+
+        .dark-mode .section {
+            background: #3d3d3d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .section h2,
+        .dark-mode .section h3 {
+            color: #e0e0e0;
+        }
+
+        .dark-mode .input-group input {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .dark-mode .action-btn {
+            background: #3d3d3d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .action-btn:hover {
+            background: #4d4d4d;
+            border-color: #667eea;
+        }
+
+        .dark-mode .new-action-btn {
+            color: #68d391;
+            border-color: #48bb78;
+        }
+
+        .dark-mode .player-tag {
+            background: #3d3d3d;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .dark-mode .stats-summary {
+            background: #3d3d3d;
+        }
+
+        .dark-mode .stat-item {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .modal-content {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .modal-content h2 {
+            color: #e0e0e0;
+        }
+
+        .dark-mode .modal-content p {
+            color: #bbb;
+        }
+
+        .dark-mode .modal-input {
+            background: #3d3d3d;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .dark-mode .player-btn {
+            background: #3d3d3d;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .field-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .field-position {
+            aspect-ratio: 1;
+            background: #f0f4ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .field-position:hover {
+            border-color: #667eea;
+            background: #e8eefb;
+        }
+
+        .field-position.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .dark-mode .field-position {
+            background: #3d3d3d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .field-position:hover {
+            border-color: #667eea;
+            background: #4d4d4d;
+        }
+
+        .action-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            border-left: 4px solid #667eea;
+        }
+
+        .dark-mode .action-item {
+            background: #3d3d3d;
+        }
+
+        .action-item button {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .mvp-badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 8px;
+            font-size: 0.8em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .dark-mode .tabs {
+            border-bottom-color: #555;
+        }
+
+        .dark-mode .tab-btn {
+            color: #999;
+        }
+
+        .dark-mode .tab-btn.active {
+            color: #667eea;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .game-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .info-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-input label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-input input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .dark-mode .info-input input {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-item strong {
+            color: #333;
+        }
+
+        .dark-mode .history-item {
+            background: #3d3d3d;
+        }
+
+        .dark-mode .history-item strong {
+            color: #e0e0e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .header {
+                background: #667eea;
+            }
+
+            .btn-group-horizontal,
+            .section:first-of-type {
+                display: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
+
 <div class="container">
-  <header class="header">
-    <div class="header-top">
-      <h1>⚽ Soccer Stat Tracker Pro</h1>
-      <div class="header-actions">
-        <label class="toggle-switch" title="Modo escuro">
-          <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
-          <span class="slider"></span>
-        </label>
-        <button class="btn btn-primary btn-small" onclick="showGameHistory()">📚 Histórico</button>
-      </div>
-    </div>
-    <div class="timer-display" id="timerDisplay">00:00</div>
-    <div class="current-period" id="currentPeriod">Clica em "Iniciar Jogo"</div>
-  </header>
 
-  <section class="scoreboard" aria-label="Estatísticas rápidas">
-    <div class="score-card"><div class="value" id="scoreRemates">0</div><div class="label">REMATES</div></div>
-    <div class="score-card"><div class="value" id="scoreEnquadrados">0</div><div class="label">ENQUADRADOS</div></div>
-    <div class="score-card"><div class="value" id="scoreAssistencias">0</div><div class="label">ASSISTÊNCIAS</div></div>
-    <div class="score-card"><div class="value" id="scoreRecuperacoes">0</div><div class="label">RECUPERAÇÕES</div></div>
-    <div class="score-card"><div class="value" id="scoreGolos">0</div><div class="label">GOLOS</div></div>
-  </section>
+    <!-- HEADER -->
+    <div class="header">
 
-  <main class="content">
-    <section class="section">
-      <h2>Controlo do Jogo</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
 
-      <h3>Informações do Jogo</h3>
-      <div class="game-info">
-        <div class="info-input"><label>Equipa Adversária</label><input id="opponentTeam" type="text" placeholder="Nome do adversário"></div>
-        <div class="info-input"><label>Resultado Final</label><input id="finalScore" type="text" placeholder="ex.: 3-1"></div>
-      </div>
+            <h1 style="margin: 0;">⚽ Soccer Stat Tracker Pro</h1>
 
-      <h3>Posição em Campo</h3>
-      <div class="field-selector">
-        <button class="field-position" onclick="selectPosition('GR')">🥅 GR</button>
-        <button class="field-position" onclick="selectPosition('DF')">🛡️ DF</button>
-        <button class="field-position" onclick="selectPosition('MC')">🎯 MC</button>
-        <button class="field-position" onclick="selectPosition('AT')">⚡ AT</button>
-      </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
 
-      <h3>Jogadoras</h3>
-      <div class="input-group">
-        <input id="playerInput" type="text" placeholder="Nome da jogadora...">
-        <button class="btn btn-primary" onclick="addPlayer()">Adicionar</button>
-      </div>
-      <div class="player-list" id="playerList"></div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                    <span class="slider"></span>
+                </label>
 
-      <h3>Temporizador</h3>
-      <div class="timer-controls">
-        <button class="btn btn-success" id="startBtn" onclick="startGame()">▶ Iniciar Jogo</button>
-        <button class="btn btn-warning" id="halfBtn" onclick="toggleHalftime()" style="display:none">⏸ Intervalo</button>
-        <button class="btn btn-success" id="resumeBtn" onclick="resumeGame()" style="display:none">▶ 2ª Parte</button>
-      </div>
-      <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="resetGame()">↻ Reiniciar Jogo</button>
+                <button
+                    class="btn btn-primary btn-small"
+                    onclick="showGameHistory()"
+                    style="padding: 8px 12px;">
+                    📚 Histórico
+                </button>
 
-      <div class="quick-stats">
-        <h3>Estatísticas por Jogadora</h3>
-        <div id="actionStats"><div class="empty">Sem ações registadas</div></div>
-      </div>
+            </div>
 
-      <h3>Últimas Ações</h3>
-      <div class="recent-wrap" id="recentActions"><div class="empty">Sem ações registadas</div></div>
-    </section>
-
-    <section class="section">
-      <h2>Registar Ação</h2>
-      <p style="color:var(--muted);font-size:.86rem;margin-bottom:10px"><strong>1.</strong> Escolhe a ação</p>
-      <div class="action-buttons" id="actionButtons"></div>
-
-      <div class="custom-action-row">
-        <input id="customActionInput" type="text" placeholder="Nova ação personalizada...">
-        <button class="btn btn-secondary" onclick="createCustomAction()">＋ Criar</button>
-      </div>
-
-      <p style="color:var(--muted);font-size:.86rem;margin:18px 0 10px"><strong>2.</strong> Escolhe a jogadora</p>
-      <div class="player-select-area" id="playerSelectArea">
-        <div class="empty" style="grid-column:1/-1">Seleciona uma ação primeiro</div>
-      </div>
-
-      <div class="selected-action"><span id="selectedActionDisplay">Ação selecionada: -</span></div>
-
-      <div style="margin-top:16px;background:#fff;border-radius:9px;padding:12px;border:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <strong>↩ Última ação</strong>
-          <button id="undoBtn" class="btn btn-secondary btn-small" onclick="undoLastAction()" disabled>Desfazer</button>
         </div>
-        <div id="undoInfo" style="font-size:.78rem;color:var(--muted);margin-top:5px">Nenhuma ação para desfazer</div>
-      </div>
-    </section>
-  </main>
 
-  <div class="bottom-actions">
-    <button class="btn btn-primary" onclick="showReport()" style="width:100%;font-size:1rem">📊 Ver Relatório Detalhado</button>
-  </div>
-</div>
+        <div class="timer-display" id="timerDisplay">00:00</div>
 
-<!-- Histórico -->
-<div class="modal" id="historyModal">
-  <div class="modal-content small">
-    <div class="modal-header"><h2>📚 Histórico de Jogos</h2><button class="close-btn" onclick="closeModal('historyModal')">✕</button></div>
-    <div id="historyContent"></div>
-  </div>
-</div>
+        <div class="current-period" id="currentPeriod">
+            Clica em "Iniciar Jogo"
+        </div>
 
-<!-- Nova ação -->
-<div class="modal" id="actionModal">
-  <div class="modal-content small">
-    <div class="modal-header"><h2>＋ Nova Ação</h2><button class="close-btn" onclick="closeModal('actionModal')">✕</button></div>
-    <input id="modalActionInput" type="text" placeholder="Ex.: Cruzamento, Falta sofrida...">
-    <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="createCustomActionFromModal()">Criar Ação</button>
-  </div>
-</div>
-
-<!-- Relatório -->
-<div class="modal" id="reportModal">
-  <div class="modal-content">
-    <div class="modal-header"><h2>📊 Relatório Detalhado do Jogo</h2><button class="close-btn" onclick="closeModal('reportModal')">✕</button></div>
-    <div id="reportContent"></div>
-    <div class="button-group btn-group-horizontal">
-      <button class="btn btn-primary" onclick="printReport()">🖨 Imprimir</button>
-      <button class="btn btn-secondary" onclick="closeModal('reportModal')">Fechar</button>
     </div>
-  </div>
+
+
+    <!-- CONTEÚDO -->
+    <div class="content">
+
+        <!-- PAINEL ESQUERDO -->
+        <div class="section">
+
+            <h2>Controlo do Jogo</h2>
+
+            <h3>Informações do Jogo</h3>
+
+            <div class="game-info">
+
+                <div class="info-input">
+                    <label>Equipa Adversária</label>
+                    <input
+                        type="text"
+                        id="opponentTeam"
+                        placeholder="Nome do adversário"
+                        onchange="saveData()">
+                </div>
+
+                <div class="info-input">
+                    <label>Resultado Final</label>
+                    <input
+                        type="text"
+                        id="finalScore"
+                        placeholder="ex: 3-1"
+                        onchange="saveData()">
+                </div>
+
+            </div>
+
+
+            <h3>Posição em Campo</h3>
+
+            <div class="field-selector">
+
+                <div class="field-position" onclick="selectPosition('GR')">
+                    🥅 GR
+                </div>
+
+                <div class="field-position" onclick="selectPosition('DF')">
+                    🛡️ DF
+                </div>
+
+                <div class="field-position" onclick="selectPosition('MC')">
+                    🎯 MC
+                </div>
+
+                <div class="field-position" onclick="selectPosition('AT')">
+                    ⚡ AT
+                </div>
+
+            </div>
+
+
+            <h3>Jogadoras</h3>
+
+            <div class="input-group">
+
+                <input
+                    type="text"
+                    id="playerInput"
+                    placeholder="Nome da jogadora...">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="addPlayer()">
+                    Adicionar
+                </button>
+
+            </div>
+
+            <div
+                class="player-list"
+                id="playerList">
+            </div>
+
+
+            <h3 style="margin-top: 25px;">
+                Temporizador
+            </h3>
+
+            <div class="timer-controls">
+
+                <button
+                    class="btn btn-success"
+                    id="startBtn"
+                    onclick="startGame()">
+                    Iniciar Jogo
+                </button>
+
+                <button
+                    class="btn btn-warning"
+                    id="halfBtn"
+                    onclick="toggleHalftime()"
+                    style="display: none;">
+                    Intervalo
+                </button>
+
+                <button
+                    class="btn btn-success"
+                    id="resumeBtn"
+                    onclick="resumeGame()"
+                    style="display: none;">
+                    2ª Parte
+                </button>
+
+            </div>
+
+            <button
+                class="btn btn-danger"
+                onclick="resetGame()"
+                style="width: 100%;">
+                Reiniciar Jogo
+            </button>
+
+
+            <div
+                id="actionStats"
+                style="margin-top: 20px;">
+            </div>
+
+
+            <h3 style="margin-top: 25px;">
+                Últimas Ações
+            </h3>
+
+            <div
+                id="recentActions"
+                style="max-height: 300px; overflow-y: auto; background: white; border-radius: 8px; padding: 10px;">
+            </div>
+
+        </div>
+
+
+        <!-- PAINEL DIREITO -->
+        <div class="section">
+
+            <h2>Registar Ação</h2>
+
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;">
+                1. Escolhe a ação
+            </p>
+
+
+            <!-- AÇÕES -->
+            <div
+                class="action-buttons"
+                id="actionButtons">
+            </div>
+
+
+            <!-- GESTÃO DE AÇÕES -->
+            <button
+                class="btn new-action-btn"
+                onclick="openNewActionModal()"
+                style="width: 100%; margin-bottom: 20px;">
+                ➕ Criar Nova Ação
+            </button>
+
+
+            <p style="color: #666; margin-top: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                2. Escolhe a jogadora
+            </p>
+
+
+            <div
+                id="playerSelectArea"
+                style="min-height: 200px; background: white; border-radius: 8px; padding: 15px; border: 2px dashed #e0e0e0;">
+
+                <p style="color: #999; text-align: center;">
+                    Seleciona uma ação primeiro
+                </p>
+
+            </div>
+
+
+            <div
+                style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #48bb78;">
+
+                <p
+                    id="selectedActionDisplay"
+                    style="font-weight: 600; color: #333; text-align: center; min-height: 30px;">
+                    -
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RELATÓRIO -->
+    <div style="padding: 0 20px 20px 20px;">
+
+        <button
+            class="btn btn-primary"
+            onclick="showReport()"
+            style="width: 100%; padding: 15px; font-size: 1.1em;">
+            📊 Ver Relatório Detalhado
+        </button>
+
+    </div>
+
 </div>
+
+
+<!-- MODAL JOGADORA -->
+<div
+    class="modal"
+    id="playerModal">
+
+    <div class="modal-content">
+
+        <h2>Escolhe a Jogadora</h2>
+
+        <div
+            class="player-buttons"
+            id="playerModalButtons">
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL NOVA AÇÃO -->
+<div
+    class="modal"
+    id="newActionModal">
+
+    <div class="modal-content">
+
+        <h2>➕ Criar Nova Ação</h2>
+
+        <p>
+            Introduz o nome da nova ação que queres utilizar durante o jogo.
+        </p>
+
+        <input
+            type="text"
+            id="newActionInput"
+            class="modal-input"
+            placeholder="Ex: Cruzamento">
+
+        <div class="btn-group-horizontal">
+
+            <button
+                class="btn btn-success"
+                onclick="createNewAction()">
+                Criar Ação
+            </button>
+
+            <button
+                class="btn btn-danger"
+                onclick="closeNewActionModal()">
+                Cancelar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL HISTÓRICO -->
+<div
+    class="modal"
+    id="historyModal">
+
+    <div class="modal-content">
+
+        <h2>📚 Histórico de Jogos</h2>
+
+        <div id="historyContent"></div>
+
+        <div class="btn-group-horizontal">
+
+            <button
+                class="btn btn-danger"
+                onclick="closeHistory()">
+                Fechar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL RELATÓRIO -->
+<div
+    class="modal"
+    id="reportModal">
+
+    <div class="modal-content">
+
+        <h2>📊 Relatório Detalhado do Jogo</h2>
+
+        <div id="reportContent"></div>
+
+        <div class="btn-group-horizontal">
+
+            <button
+                class="btn btn-primary"
+                onclick="printReport()">
+                🖨️ Imprimir
+            </button>
+
+            <button
+                class="btn btn-danger"
+                onclick="closeReport()">
+                Fechar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <script>
-const STORAGE_KEY='soccerStatData';
-const HISTORY_KEY='soccerStatHistory';
-const THEME_KEY='soccerStatDarkMode';
 
-const DEFAULT_ACTIONS=[
-  {id:'remate',name:'Remate',icon:'🎯',default:true},
-  {id:'remate-enquadrado',name:'Remate Enquadrado',icon:'🔥',default:true},
-  {id:'assistencia',name:'Assistência',icon:'🤝',default:true},
-  {id:'recuperacao-bola',name:'Recuperação de Bola',icon:'🛡️',default:true},
-  {id:'golo',name:'Golo',icon:'⚽',default:true}
-];
+    // ============================================================
+    // CONFIGURAÇÃO
+    // ============================================================
 
-let gameState={
-  players:[],actions:[],customActions:[],selectedAction:null,selectedPosition:null,
-  gameStarted:false,gameTime:0,period:'parado',startTime:0,halfCount:0
-};
-let timerInterval=null;
-let historyData=[];
+    const STORAGE_KEY = 'soccerStatData';
 
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-function escapeHtml(v){
-  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
-function allActions(){return [...DEFAULT_ACTIONS,...(gameState.customActions||[])]}
-function actionByName(name){return allActions().find(a=>a.name===name)||{name,icon:'📌',default:false}}
+    const HISTORY_KEY = 'soccerStatHistory';
 
-function loadData(){
-  try{
-    const saved=localStorage.getItem(STORAGE_KEY);
-    if(saved){
-      const parsed=JSON.parse(saved);
-      gameState={...gameState,...parsed};
-      gameState.players=Array.isArray(gameState.players)?gameState.players:[];
-      gameState.actions=Array.isArray(gameState.actions)?gameState.actions:[];
-      gameState.customActions=Array.isArray(gameState.customActions)?gameState.customActions:[];
-    }
-  }catch(e){console.warn('Não foi possível carregar os dados.',e)}
-  try{
-    const h=localStorage.getItem(HISTORY_KEY);historyData=h?JSON.parse(h):[];
-    if(!Array.isArray(historyData))historyData=[];
-  }catch(e){historyData=[]}
-  const dark=localStorage.getItem(THEME_KEY)==='1';
-  document.body.classList.toggle('dark-mode',dark);
-  document.getElementById('darkModeToggle').checked=dark;
-}
-function saveData(){
-  const payload={...gameState,
-    opponent:document.getElementById('opponentTeam')?.value||'',
-    score:document.getElementById('finalScore')?.value||''
-  };
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
-}
-function saveHistory(){localStorage.setItem(HISTORY_KEY,JSON.stringify(historyData.slice(0,50)))}
+    /*
+        AÇÕES PADRÃO DA APP
 
-function renderPlayers(){
-  const list=document.getElementById('playerList');
-  list.innerHTML=gameState.players.length?gameState.players.map((p,i)=>`
-    <div class="player-tag">${escapeHtml(p.name)}
-      <button title="Remover jogadora" onclick="removePlayer(${i})">✕</button>
-    </div>`).join(''):'<span style="color:var(--muted);font-size:.8rem">Ainda não adicionaste jogadoras.</span>';
-  updatePlayerSelectors();
-  updateActionStats();
-}
-function addPlayer(){
-  const input=document.getElementById('playerInput'),name=input.value.trim();
-  if(!name)return alert('Por favor, introduz o nome da jogadora.');
-  if(gameState.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert('Esta jogadora já está na lista.');
-  gameState.players.push({name});input.value='';saveData();renderPlayers();
-  if(!gameState.gameStarted)input.focus();
-}
-function removePlayer(index){
-  const p=gameState.players[index];if(!p)return;
-  if(gameState.actions.some(a=>a.player===p.name) && !confirm(`Remover ${p.name}? As ações registadas desta jogadora também serão removidas.`))return;
-  gameState.players.splice(index,1);
-  gameState.actions=gameState.actions.filter(a=>a.player!==p.name);
-  saveData();renderPlayers();updateScoreboard();renderRecentActions();
-}
-function selectPosition(pos){
-  gameState.selectedPosition=pos;saveData();
-  document.querySelectorAll('.field-position').forEach(b=>b.classList.toggle('selected',b.textContent.includes(pos)));
-}
+        Estas ações fazem parte da estrutura principal
+        e não podem ser eliminadas pelo utilizador.
+    */
+    const DEFAULT_ACTIONS = [
+        'Remate',
+        'Remate Enquadrado',
+        'Assistência',
+        'Recuperação de Bola',
+        'Golo'
+    ];
 
-function renderActionButtons(){
-  const wrap=document.getElementById('actionButtons');
-  wrap.innerHTML=allActions().map(a=>`
-    <button class="action-btn ${gameState.selectedAction===a.name?'active':''} ${a.default?'':'custom'}"
-      onclick="selectAction(${JSON.stringify(a.name)})">
-      ${a.icon||'📌'} ${escapeHtml(a.name)}
-    </button>`).join('');
-}
-function selectAction(action){
-  gameState.selectedAction=action;saveData();renderActionButtons();
-  document.getElementById('selectedActionDisplay').textContent=`Ação selecionada: ${action}`;
-  updatePlayerSelectors();
-}
-function updatePlayerSelectors(){
-  const area=document.getElementById('playerSelectArea');
-  if(!gameState.selectedAction){
-    area.innerHTML='<div class="empty" style="grid-column:1/-1">Seleciona uma ação primeiro</div>';return;
-  }
-  if(!gameState.players.length){
-    area.innerHTML='<div class="empty" style="grid-column:1/-1">Adiciona jogadoras primeiro</div>';return;
-  }
-  area.innerHTML=gameState.players.map((p,i)=>`
-    <button class="player-btn" onclick="recordAction(${i})">${escapeHtml(p.name)}</button>`).join('');
-}
-function createCustomAction(){
-  const input=document.getElementById('customActionInput'),name=input.value.trim();
-  if(!name)return alert('Escreve o nome da nova ação.');
-  createAction(name,input);
-}
-function createCustomActionFromModal(){
-  const input=document.getElementById('modalActionInput'),name=input.value.trim();
-  if(!name)return alert('Escreve o nome da nova ação.');
-  createAction(name,input);closeModal('actionModal');
-}
-function createAction(name,input){
-  if(allActions().some(a=>a.name.toLowerCase()===name.toLowerCase()))return alert('Já existe uma ação com esse nome.');
-  gameState.customActions.push({id:uid(),name,icon:'📌',default:false});
-  gameState.selectedAction=name;input.value='';saveData();renderActionButtons();
-  document.getElementById('selectedActionDisplay').textContent=`Ação selecionada: ${name}`;
-  updatePlayerSelectors();
-}
 
-function recordAction(playerIndex){
-  if(!gameState.gameStarted)return alert('O jogo ainda não começou!');
-  const player=gameState.players[playerIndex];if(!player||!gameState.selectedAction)return;
-  const action={id:uid(),player:player.name,action:gameState.selectedAction,time:gameState.gameTime,
-    period:gameState.period,timestamp:new Date().toISOString(),position:gameState.selectedPosition||null};
-  gameState.actions.push(action);saveData();
-  updateScoreboard();updateActionStats();renderRecentActions();updateUndo();
-  const area=document.getElementById('playerSelectArea');
-  area.style.outline='3px solid #48bb78';setTimeout(()=>area.style.outline='none',180);
-}
-function deleteAction(index){
-  if(index<0||index>=gameState.actions.length)return;
-  gameState.actions.splice(index,1);saveData();updateScoreboard();updateActionStats();renderRecentActions();updateUndo();
-}
-function undoLastAction(){if(gameState.actions.length)deleteAction(gameState.actions.length-1)}
-function updateUndo(){
-  const btn=document.getElementById('undoBtn'),info=document.getElementById('undoInfo'),last=gameState.actions.at(-1);
-  btn.disabled=!last;
-  info.textContent=last?`Última: ${last.action} — ${last.player} — ${formatTime(last.time)}`:'Nenhuma ação para desfazer';
-}
+    // ============================================================
+    // ESTADO DO JOGO
+    // ============================================================
 
-function getCounts(){
-  const c={Remate:0,'Remate Enquadrado':0,Assistência:0,'Recuperação de Bola':0,Golo:0};
-  gameState.actions.forEach(a=>{if(c[a.action]!==undefined)c[a.action]++});return c;
-}
-function updateScoreboard(){
-  const c=getCounts();
-  document.getElementById('scoreRemates').textContent=c.Remate;
-  document.getElementById('scoreEnquadrados').textContent=c['Remate Enquadrado'];
-  document.getElementById('scoreAssistencias').textContent=c.Assistência;
-  document.getElementById('scoreRecuperacoes').textContent=c['Recuperação de Bola'];
-  document.getElementById('scoreGolos').textContent=c.Golo;
-}
-function updateActionStats(){
-  const wrap=document.getElementById('actionStats');
-  if(!gameState.actions.length){wrap.innerHTML='<div class="empty">Sem ações registadas</div>';return}
-  const byPlayer={};
-  gameState.actions.forEach(a=>{
-    if(!byPlayer[a.player])byPlayer[a.player]={};
-    byPlayer[a.player][a.action]=(byPlayer[a.player][a.action]||0)+1;
-  });
-  wrap.innerHTML=Object.entries(byPlayer).map(([player,stats])=>{
-    const total=Object.values(stats).reduce((a,b)=>a+b,0);
-    const mini=Object.entries(stats).map(([a,n])=>`<span class="mini-stat">${escapeHtml(a)}: <strong>${n}</strong></span>`).join('');
-    return `<div class="player-stat"><div class="player-stat-head"><span class="player-stat-name">${escapeHtml(player)}</span><span class="player-stat-total">${total} ações</span></div><div class="mini-stats">${mini}</div></div>`;
-  }).join('');
-}
-function renderRecentActions(){
-  const wrap=document.getElementById('recentActions');
-  if(!gameState.actions.length){wrap.innerHTML='<div class="empty">Sem ações registadas</div>';return}
-  wrap.innerHTML=[...gameState.actions].map((a,i)=>({a,i})).reverse().slice(0,50).map(({a,i})=>{
-    const meta=actionByName(a.action);
-    return `<div class="action-item"><div class="action-main"><strong>${meta.icon||'📌'} ${escapeHtml(a.action)}</strong><span>${escapeHtml(a.player)} · ${formatTime(a.time)}${a.period==='primeira'?' · 1ª parte':a.period==='segunda'?' · 2ª parte':''}</span></div><button onclick="deleteAction(${i})">✕</button></div>`;
-  }).join('');
-}
+    let gameState = {
 
-function formatTime(seconds){
-  seconds=Math.max(0,Number(seconds)||0);
-  return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
-}
-function updateTimer(){
-  document.getElementById('timerDisplay').textContent=formatTime(gameState.gameTime);
-  const texts={parado:'Clica em "Iniciar Jogo"',primeira:'⏱️ 1ª Parte em Curso',intervalo:'⏸️ Intervalo',segunda:'⏱️ 2ª Parte em Curso'};
-  document.getElementById('currentPeriod').textContent=texts[gameState.period]||texts.parado;
-}
-function startGame(){
-  if(!gameState.players.length)return alert('Adiciona jogadoras antes de começar.');
-  if(gameState.gameStarted)return;
-  gameState.gameStarted=true;gameState.period='primeira';gameState.startTime=Date.now()-(gameState.gameTime*1000);
-  gameState.halfCount=1;saveData();syncTimerButtons();startTimer();updateTimer();
-}
-function toggleHalftime(){
-  if(!gameState.gameStarted)return;
-  clearInterval(timerInterval);gameState.period='intervalo';gameState.gameStarted=false;saveData();syncTimerButtons();updateTimer();
-}
-function resumeGame(){
-  gameState.gameStarted=true;gameState.period='segunda';gameState.halfCount=2;gameState.startTime=Date.now()-(gameState.gameTime*1000);
-  saveData();syncTimerButtons();startTimer();updateTimer();
-}
-function startTimer(){
-  clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    if(!gameState.gameStarted)return;
-    gameState.gameTime=Math.floor((Date.now()-gameState.startTime)/1000);
-    saveData();updateTimer();
-  },500);
-}
-function syncTimerButtons(){
-  document.getElementById('startBtn').style.display=gameState.gameStarted||gameState.period==='intervalo'?'none':'block';
-  document.getElementById('halfBtn').style.display=gameState.gameStarted?'block':'none';
-  document.getElementById('resumeBtn').style.display=gameState.period==='intervalo'?'block':'none';
-  document.getElementById('playerInput').disabled=gameState.gameStarted||gameState.period==='intervalo';
-}
-function resetGame(){
-  if(!confirm('Tens a certeza? O jogo atual será reiniciado.'))return;
-  if(gameState.actions.length)saveCurrentGameToHistory();
-  clearInterval(timerInterval);
-  gameState={players:gameState.players,actions:[],customActions:gameState.customActions,selectedAction:null,selectedPosition:null,gameStarted:false,gameTime:0,period:'parado',startTime:0,halfCount:0};
-  saveData();renderPlayers();renderActionButtons();updateScoreboard();renderRecentActions();updateUndo();updateTimer();syncTimerButtons();
-  document.getElementById('opponentTeam').value='';document.getElementById('finalScore').value='';
-}
-function saveCurrentGameToHistory(){
-  const item={
-    id:uid(),date:new Date().toISOString(),opponent:document.getElementById('opponentTeam').value.trim(),
-    score:document.getElementById('finalScore').value.trim(),gameTime:gameState.gameTime,
-    players:[...gameState.players],actions:[...gameState.actions]
-  };
-  historyData.unshift(item);saveHistory();
-}
+        players: [],
 
-function showGameHistory(){
-  const wrap=document.getElementById('historyContent');
-  if(!historyData.length){wrap.innerHTML='<div class="empty">Ainda não existem jogos guardados.</div>';openModal('historyModal');return}
-  wrap.innerHTML=historyData.map((g,i)=>`
-    <div class="history-item">
-      <div class="history-meta"><strong>${escapeHtml(g.opponent||'Adversário não indicado')} ${g.score?' · '+escapeHtml(g.score):''}</strong>
-      ${new Date(g.date).toLocaleString('pt-PT')} · ${g.actions.length} ações</div>
-      <div class="history-buttons"><button class="btn btn-primary btn-small" onclick="viewHistoryGame(${i})">Ver</button><button class="btn btn-danger btn-small" onclick="deleteHistoryGame(${i})">Apagar</button></div>
-    </div>`).join('');
-  openModal('historyModal');
-}
-function viewHistoryGame(index){
-  const g=historyData[index];if(!g)return;
-  let html=generateReport(g);
-  document.getElementById('historyContent').innerHTML=`<button class="btn btn-secondary btn-small" onclick="showGameHistory()">← Voltar</button><div style="margin-top:12px">${html}</div>`;
-}
-function deleteHistoryGame(index){
-  if(!confirm('Apagar este jogo do histórico?'))return;
-  historyData.splice(index,1);saveHistory();showGameHistory();
-}
+        actions: [],
 
-function generateReport(data=gameState){
-  if(data===gameState){
-    data={...gameState,
-      opponent:document.getElementById('opponentTeam')?.value||'',
-      score:document.getElementById('finalScore')?.value||''
+        customActions: [],
+
+        gameStarted: false,
+
+        gameTime: 0,
+
+        period: 'parado',
+
+        selectedAction: null,
+
+        selectedPosition: null,
+
+        startTime: 0,
+
+        pauseTime: 0,
+
+        opponentTeam: '',
+
+        finalScore: ''
+
     };
-  }
-  const actions=data.actions||[],players=data.players||[];
-  const byType={};const byPlayer={};
-  actions.forEach(a=>{
-    byType[a.action]=(byType[a.action]||0)+1;
-    if(!byPlayer[a.player])byPlayer[a.player]={};
-    byPlayer[a.player][a.action]=(byPlayer[a.player][a.action]||0)+1;
-  });
-  const totalTime=formatTime(data.gameTime);
-  const top=Object.entries(byType).map(([a,n])=>`<tr><td>${escapeHtml(a)}</td><td><strong>${n}</strong></td></tr>`).join('');
-  const playerHtml=Object.entries(byPlayer).map(([p,stats])=>{
-    const total=Object.values(stats).reduce((x,y)=>x+y,0);
-    return `<div class="player-stat"><div class="player-stat-head"><span class="player-stat-name">${escapeHtml(p)}</span><span class="player-stat-total">${total} ações</span></div><div class="mini-stats">${Object.entries(stats).map(([a,n])=>`<span class="mini-stat">${escapeHtml(a)}: <strong>${n}</strong></span>`).join('')}</div></div>`;
-  }).join('')||'<div class="empty">Sem ações registadas.</div>';
-  const timeline=[...actions].sort((a,b)=>a.time-b.time).map(a=>`<tr><td>${formatTime(a.time)}</td><td>${escapeHtml(a.player)}</td><td>${escapeHtml(a.action)}</td><td>${a.period==='primeira'?'1ª Parte':a.period==='segunda'?'2ª Parte':'—'}</td></tr>`).join('');
-  return `<div class="report-section"><h3>📋 Resumo do Jogo</h3><div class="stats-grid">
-    <div class="stat-item"><div class="stat-label">Adversário</div><div class="stat-value" style="font-size:1rem">${escapeHtml(data.opponent||'—')}</div></div>
-    <div class="stat-item"><div class="stat-label">Resultado</div><div class="stat-value">${escapeHtml(data.score||'—')}</div></div>
-    <div class="stat-item"><div class="stat-label">Duração</div><div class="stat-value">${totalTime}</div></div>
-    <div class="stat-item"><div class="stat-label">Total de Ações</div><div class="stat-value">${actions.length}</div></div>
-  </div></div>
-  <div class="report-section"><h3>🎯 Ações por Tipo</h3><table class="report-table"><thead><tr><th>Ação</th><th>Total</th></tr></thead><tbody>${top||'<tr><td colspan="2">Sem ações.</td></tr>'}</tbody></table></div>
-  <div class="report-section"><h3>👤 Estatísticas por Jogadora</h3>${playerHtml}</div>
-  <div class="report-section"><h3>📝 Cronograma de Ações</h3><table class="report-table"><thead><tr><th>Tempo</th><th>Jogadora</th><th>Ação</th><th>Parte</th></tr></thead><tbody>${timeline||'<tr><td colspan="4">Sem ações.</td></tr>'}</tbody></table></div>`;
-}
-function showReport(){document.getElementById('reportContent').innerHTML=generateReport();openModal('reportModal')}
-function printReport(){window.print()}
-function openModal(id){document.getElementById(id).classList.add('active')}
-function closeModal(id){document.getElementById(id).classList.remove('active')}
 
-function toggleDarkMode(){
-  const dark=document.getElementById('darkModeToggle').checked;
-  document.body.classList.toggle('dark-mode',dark);localStorage.setItem(THEME_KEY,dark?'1':'0');
-}
 
-document.addEventListener('click',e=>{
-  ['historyModal','actionModal','reportModal'].forEach(id=>{const m=document.getElementById(id);if(e.target===m)closeModal(id)})
-});
-document.getElementById('playerInput').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer()});
-document.getElementById('customActionInput').addEventListener('keydown',e=>{if(e.key==='Enter')createCustomAction()});
-document.getElementById('modalActionInput').addEventListener('keydown',e=>{if(e.key==='Enter')createCustomActionFromModal()});
-document.getElementById('opponentTeam').addEventListener('change',saveData);
-document.getElementById('finalScore').addEventListener('change',saveData);
+    let timerInterval = null;
 
-function init(){
-  loadData();
-  document.getElementById('opponentTeam').value=gameState.opponent||'';
-  document.getElementById('finalScore').value=gameState.score||'';
-  renderPlayers();renderActionButtons();updateScoreboard();updateActionStats();renderRecentActions();updateUndo();updateTimer();syncTimerButtons();
-  if(gameState.gameStarted)startTimer();
-}
-init();
+
+    // ============================================================
+    // CARREGAR DADOS
+    // ============================================================
+
+    function loadData() {
+
+        try {
+
+            const saved = localStorage.getItem(STORAGE_KEY);
+
+            if (saved) {
+
+                const parsed = JSON.parse(saved);
+
+                gameState = {
+                    ...gameState,
+                    ...parsed
+                };
+
+            }
+
+        } catch (error) {
+
+            console.error('Erro ao carregar dados:', error);
+
+        }
+
+        /*
+            Compatibilidade com versões anteriores.
+        */
+
+        if (!Array.isArray(gameState.players)) {
+            gameState.players = [];
+        }
+
+        if (!Array.isArray(gameState.actions)) {
+            gameState.actions = [];
+        }
+
+        if (!Array.isArray(gameState.customActions)) {
+            gameState.customActions = [];
+        }
+
+        /*
+            Remove possíveis duplicados das ações personalizadas.
+        */
+
+        gameState.customActions = [
+            ...new Set(
+                gameState.customActions
+                    .map(action => String(action).trim())
+                    .filter(Boolean)
+                    .filter(action => !DEFAULT_ACTIONS.includes(action))
+            )
+        ];
+
+    }
+
+
+    // ============================================================
+    // GUARDAR DADOS
+    // ============================================================
+
+    function saveData() {
+
+        /*
+            Atualizar informações do jogo antes de guardar.
+        */
+
+        const opponentInput = document.getElementById('opponentTeam');
+
+        const scoreInput = document.getElementById('finalScore');
+
+        if (opponentInput) {
+            gameState.opponentTeam = opponentInput.value;
+        }
+
+        if (scoreInput) {
+            gameState.finalScore = scoreInput.value;
+        }
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(gameState)
+        );
+
+    }
+
+
+    // ============================================================
+    // AÇÕES DISPONÍVEIS
+    // ============================================================
+
+    function getAllActions() {
+
+        return [
+            ...DEFAULT_ACTIONS,
+            ...gameState.customActions
+        ];
+
+    }
+
+
+    // ============================================================
+    // RENDERIZAR AÇÕES
+    // ============================================================
+
+    function renderActionButtons() {
+
+        const container =
+            document.getElementById('actionButtons');
+
+        if (!container) return;
+
+        const allActions = getAllActions();
+
+        container.innerHTML = '';
+
+        allActions.forEach(action => {
+
+            const button = document.createElement('button');
+
+            button.className = 'action-btn';
+
+            if (
+                gameState.selectedAction === action
+            ) {
+
+                button.classList.add('active');
+
+            }
+
+            if (
+                gameState.customActions.includes(action)
+            ) {
+
+                button.classList.add('custom');
+
+            }
+
+            /*
+                Ícones das ações principais.
+            */
+
+            const icons = {
+
+                'Remate': '🎯',
+
+                'Remate Enquadrado': '🔥',
+
+                'Assistência': '🤝',
+
+                'Recuperação de Bola': '🛡️',
+
+                'Golo': '⚽'
+
+            };
+
+            const icon = icons[action] || '📌';
+
+            button.textContent = `${icon} ${action}`;
+
+            /*
+                Evento sem depender da variável global event.
+            */
+
+            button.addEventListener(
+                'click',
+                () => selectAction(action)
+            );
+
+
+            /*
+                Se for ação personalizada,
+                acrescentamos botão de apagar.
+            */
+
+            if (
+                gameState.customActions.includes(action)
+            ) {
+
+                const deleteButton =
+                    document.createElement('button');
+
+                deleteButton.className =
+                    'custom-action-delete';
+
+                deleteButton.textContent = '×';
+
+                deleteButton.title =
+                    'Eliminar esta ação';
+
+                deleteButton.addEventListener(
+                    'click',
+                    function(event) {
+
+                        event.stopPropagation();
+
+                        deleteCustomAction(action);
+
+                    }
+                );
+
+                button.appendChild(deleteButton);
+
+            }
+
+            container.appendChild(button);
+
+        });
+
+    }
+
+
+    // ============================================================
+    // SELECIONAR AÇÃO
+    // ============================================================
+
+    function selectAction(action) {
+
+        gameState.selectedAction = action;
+
+        saveData();
+
+        renderActionButtons();
+
+        document.getElementById(
+            'selectedActionDisplay'
+        ).textContent =
+            `Ação selecionada: ${action}`;
+
+        updatePlayerSelectors();
+
+    }
+
+
+    // ============================================================
+    // CRIAR NOVA AÇÃO
+    // ============================================================
+
+    function openNewActionModal() {
+
+        const modal =
+            document.getElementById('newActionModal');
+
+        const input =
+            document.getElementById('newActionInput');
+
+        input.value = '';
+
+        modal.classList.add('active');
+
+        setTimeout(
+            () => input.focus(),
+            100
+        );
+
+    }
+
+
+    function closeNewActionModal() {
+
+        document
+            .getElementById('newActionModal')
+            .classList.remove('active');
+
+    }
+
+
+    function createNewAction() {
+
+        const input =
+            document.getElementById('newActionInput');
+
+        const actionName =
+            input.value.trim();
+
+
+        if (!actionName) {
+
+            alert(
+                'Introduz o nome da ação.'
+            );
+
+            input.focus();
+
+            return;
+
+        }
+
+
+        /*
+            Verificar se já existe.
+        */
+
+        const exists =
+            getAllActions().some(
+                action =>
+                    action.toLowerCase() ===
+                    actionName.toLowerCase()
+            );
+
+
+        if (exists) {
+
+            alert(
+                'Esta ação já existe.'
+            );
+
+            return;
+
+        }
+
+
+        gameState.customActions.push(
+            actionName
+        );
+
+
+        saveData();
+
+        renderActionButtons();
+
+        closeNewActionModal();
+
+
+        /*
+            Selecionar automaticamente
+            a nova ação.
+        */
+
+        selectAction(actionName);
+
+    }
+
+
+    // ============================================================
+    // ELIMINAR AÇÃO PERSONALIZADA
+    // ============================================================
+
+    function deleteCustomAction(action) {
+
+        const confirmed =
+            confirm(
+                `Queres eliminar a ação "${action}"?`
+            );
+
+        if (!confirmed) return;
+
+
+        /*
+            Remover a ação personalizada.
+        */
+
+        gameState.customActions =
+            gameState.customActions.filter(
+                item => item !== action
+            );
+
+
+        /*
+            Se era a ação selecionada,
+            limpar seleção.
+        */
+
+        if (
+            gameState.selectedAction === action
+        ) {
+
+            gameState.selectedAction = null;
+
+            document.getElementById(
+                'selectedActionDisplay'
+            ).textContent = '-';
+
+        }
+
+
+        saveData();
+
+        renderActionButtons();
+
+        updatePlayerSelectors();
+
+    }
+
+
+    // ============================================================
+    // JOGADORAS
+    // ============================================================
+
+    function addPlayer() {
+
+        const input =
+            document.getElementById('playerInput');
+
+        const name =
+            input.value.trim();
+
+
+        if (!name) {
+
+            alert(
+                'Por favor, introduz o nome da jogadora.'
+            );
+
+            return;
+
+        }
+
+
+        const exists =
+            gameState.players.some(
+                p =>
+                    p.name.toLowerCase() ===
+                    name.toLowerCase()
+            );
+
+
+        if (exists) {
+
+            alert(
+                'Esta jogadora já está na lista.'
+            );
+
+            return;
+
+        }
+
+
+        gameState.players.push({
+            name: name
+        });
+
+
+        input.value = '';
+
+        saveData();
+
+        renderPlayers();
+
+        updatePlayerSelectors();
+
+    }
+
+
+    function removePlayer(name) {
+
+        const confirmed =
+            confirm(
+                `Queres remover a jogadora "${name}"?`
+            );
+
+        if (!confirmed) return;
+
+
+        gameState.players =
+            gameState.players.filter(
+                p => p.name !== name
+            );
+
+
+        /*
+            Mantemos o comportamento anterior:
+            ao remover uma jogadora,
+            as ações associadas também são removidas.
+        */
+
+        gameState.actions =
+            gameState.actions.filter(
+                a => a.player !== name
+            );
+
+
+        saveData();
+
+        renderPlayers();
+
+        updatePlayerSelectors();
+
+        updateActionStats();
+
+        renderRecentActions();
+
+    }
+
+
+    function renderPlayers() {
+
+        const playerList =
+            document.getElementById('playerList');
+
+        if (!playerList) return;
+
+
+        if (gameState.players.length === 0) {
+
+            playerList.innerHTML =
+                '<p class="empty-state">Nenhuma jogadora adicionada.</p>';
+
+            return;
+
+        }
+
+
+        playerList.innerHTML = '';
+
+
+        gameState.players.forEach(player => {
+
+            const tag =
+                document.createElement('div');
+
+            tag.className = 'player-tag';
+
+
+            const name =
+                document.createElement('span');
+
+            name.textContent = player.name;
+
+
+            const removeButton =
+                document.createElement('button');
+
+            removeButton.textContent = '✕';
+
+            removeButton.title =
+                'Remover jogadora';
+
+            removeButton.addEventListener(
+                'click',
+                () => removePlayer(player.name)
+            );
+
+
+            tag.appendChild(name);
+
+            tag.appendChild(removeButton);
+
+            playerList.appendChild(tag);
+
+        });
+
+    }
+
+
+    // ============================================================
+    // POSIÇÃO
+    // ============================================================
+
+    function selectPosition(position) {
+
+        gameState.selectedPosition = position;
+
+        document
+            .querySelectorAll('.field-position')
+            .forEach(element => {
+
+                element.classList.remove(
+                    'selected'
+                );
+
+            });
+
+
+        const positions =
+            document.querySelectorAll(
+                '.field-position'
+            );
+
+
+        const positionMap = {
+            GR: 0,
+            DF: 1,
+            MC: 2,
+            AT: 3
+        };
+
+
+        if (
+            positionMap[position] !== undefined
+        ) {
+
+            positions[
+                positionMap[position]
+            ].classList.add('selected');
+
+        }
+
+
+        saveData();
+
+    }
+
+
+    // ============================================================
+    // SELEÇÃO DA JOGADORA
+    // ============================================================
+
+    function updatePlayerSelectors() {
+
+        const area =
+            document.getElementById(
+                'playerSelectArea'
+            );
+
+
+        if (!gameState.selectedAction) {
+
+            area.innerHTML =
+                '<p style="color:#999;text-align:center;">Seleciona uma ação primeiro</p>';
+
+            return;
+
+        }
+
+
+        if (
+            gameState.players.length === 0
+        ) {
+
+            area.innerHTML =
+                '<p style="color:#999;text-align:center;">Adiciona jogadoras primeiro</p>';
+
+            return;
+
+        }
+
+
+        area.innerHTML = '';
+
+
+        gameState.players.forEach(player => {
+
+            const button =
+                document.createElement('button');
+
+            button.className =
+                'player-btn';
+
+            button.textContent =
+                player.name;
+
+            button.addEventListener(
+                'click',
+                () => recordAction(player.name)
+            );
+
+
+            area.appendChild(button);
+
+        });
+
+    }
+
+
+    // ============================================================
+    // REGISTAR AÇÃO
+    // ============================================================
+
+    function recordAction(playerName) {
+
+        if (!gameState.gameStarted) {
+
+            alert(
+                'O jogo ainda não começou!'
+            );
+
+            return;
+
+        }
+
+
+        if (!gameState.selectedAction) {
+
+            alert(
+                'Seleciona primeiro uma ação.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Verificação extra:
+            garantir que a ação ainda existe.
+        */
+
+        if (
+            !getAllActions().includes(
+                gameState.selectedAction
+            )
+        ) {
+
+            alert(
+                'A ação selecionada já não existe.'
+            );
+
+            gameState.selectedAction = null;
+
+            saveData();
+
+            renderActionButtons();
+
+            updatePlayerSelectors();
+
+            return;
+
+        }
+
+
+        gameState.actions.push({
+
+            player: playerName,
+
+            action: gameState.selectedAction,
+
+            time: gameState.gameTime,
+
+            period: gameState.period,
+
+            timestamp: new Date().toISOString()
+
+        });
+
+
+        saveData();
+
+        updateActionStats();
+
+        renderRecentActions();
+
+
+        /*
+            Feedback visual.
+        */
+
+        const playerSelectArea =
+            document.getElementById(
+                'playerSelectArea'
+            );
+
+
+        playerSelectArea.style.background =
+            '#d4edda';
+
+
+        setTimeout(() => {
+
+            playerSelectArea.style.background =
+                '';
+
+        }, 300);
+
+    }
+
+
+    // ============================================================
+    // ESTATÍSTICAS
+    // ============================================================
+
+    function updateActionStats() {
+
+        const stats = {};
+
+
+        gameState.actions.forEach(action => {
+
+            if (!stats[action.player]) {
+
+                stats[action.player] = {};
+
+            }
+
+
+            stats[action.player][action.action] =
+                (
+                    stats[action.player][action.action] ||
+                    0
+                ) + 1;
+
+        });
+
+
+        const html =
+            Object.entries(stats)
+                .map(([player, actions]) => {
+
+                    const actionStr =
+                        Object.entries(actions)
+                            .map(
+                                ([action, count]) =>
+                                    `${action}: ${count}`
+                            )
+                            .join(' | ');
+
+
+                    return `
+                        <div class="stats-summary">
+                            <h4>${escapeHtml(player)}</h4>
+
+                            <div class="stats-grid">
+
+                                <div style="grid-column:1/-1;">
+                                    ${escapeHtml(actionStr)}
+                                </div>
+
+                            </div>
+                        </div>
+                    `;
+
+                })
+                .join('');
+
+
+        document.getElementById(
+            'actionStats'
+        ).innerHTML =
+            html ||
+            '<p style="color:#999;text-align:center;">Sem ações registadas</p>';
+
+    }
+
+
+    // ============================================================
+    // ÚLTIMAS AÇÕES
+    // ============================================================
+
+    function renderRecentActions() {
+
+        const container =
+            document.getElementById(
+                'recentActions'
+            );
+
+
+        if (!container) return;
+
+
+        if (
+            gameState.actions.length === 0
+        ) {
+
+            container.innerHTML =
+                '<p class="empty-state">Ainda não existem ações.</p>';
+
+            return;
+
+        }
+
+
+        const recent =
+            [...gameState.actions]
+                .reverse()
+                .slice(0, 30);
+
+
+        container.innerHTML = '';
+
+
+        recent.forEach(action => {
+
+            const item =
+                document.createElement('div');
+
+            item.className =
+                'action-item';
+
+
+            const mins =
+                Math.floor(action.time / 60);
+
+            const secs =
+                action.time % 60;
+
+
+            const time =
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+
+            const info =
+                document.createElement('span');
+
+            info.innerHTML =
+                `<strong>${escapeHtml(time)}</strong> — ${escapeHtml(action.player)} — ${escapeHtml(action.action)}`;
+
+
+            const remove =
+                document.createElement('button');
+
+            remove.textContent = 'Eliminar';
+
+            remove.onclick =
+                () => removeRecordedAction(
+                    action.timestamp
+                );
+
+
+            item.appendChild(info);
+
+            item.appendChild(remove);
+
+            container.appendChild(item);
+
+        });
+
+    }
+
+
+    function removeRecordedAction(timestamp) {
+
+        const confirmed =
+            confirm(
+                'Queres eliminar esta ação registada?'
+            );
+
+        if (!confirmed) return;
+
+
+        gameState.actions =
+            gameState.actions.filter(
+                action =>
+                    action.timestamp !== timestamp
+            );
+
+
+        saveData();
+
+        updateActionStats();
+
+        renderRecentActions();
+
+    }
+
+
+    // ============================================================
+    // TEMPORIZADOR
+    // ============================================================
+
+    function startGame() {
+
+        if (
+            gameState.players.length === 0
+        ) {
+
+            alert(
+                'Adiciona jogadoras antes de começar.'
+            );
+
+            return;
+
+        }
+
+
+        if (
+            gameState.gameStarted
+        ) {
+
+            return;
+
+        }
+
+
+        gameState.gameStarted = true;
+
+        gameState.period = 'primeira';
+
+        gameState.startTime =
+            Date.now() -
+            (
+                gameState.gameTime * 1000
+            );
+
+
+        gameState.pauseTime = 0;
+
+
+        document.getElementById(
+            'startBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'halfBtn'
+        ).style.display = 'block';
+
+
+        document.getElementById(
+            'resumeBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'playerInput'
+        ).disabled = true;
+
+
+        startTimer();
+
+        saveData();
+
+        updateTimer();
+
+    }
+
+
+    function toggleHalftime() {
+
+        if (
+            gameState.period === 'primeira'
+        ) {
+
+            gameState.period =
+                'intervalo';
+
+            clearInterval(timerInterval);
+
+
+            document.getElementById(
+                'halfBtn'
+            ).style.display = 'none';
+
+
+            document.getElementById(
+                'resumeBtn'
+            ).style.display = 'block';
+
+
+            saveData();
+
+            updateTimer();
+
+            return;
+
+        }
+
+
+        if (
+            gameState.period === 'segunda'
+        ) {
+
+            gameState.period =
+                'intervalo';
+
+            clearInterval(timerInterval);
+
+
+            document.getElementById(
+                'halfBtn'
+            ).style.display = 'none';
+
+
+            document.getElementById(
+                'resumeBtn'
+            ).style.display = 'block';
+
+
+            saveData();
+
+            updateTimer();
+
+        }
+
+    }
+
+
+    function resumeGame() {
+
+        if (
+            gameState.period !== 'intervalo'
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+            Quando retomamos a partir do intervalo,
+            entramos sempre na 2.ª parte.
+        */
+
+        gameState.period =
+            'segunda';
+
+
+        gameState.startTime =
+            Date.now() -
+            (
+                gameState.gameTime * 1000
+            );
+
+
+        document.getElementById(
+            'resumeBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'halfBtn'
+        ).style.display = 'block';
+
+
+        startTimer();
+
+        saveData();
+
+        updateTimer();
+
+    }
+
+
+    function startTimer() {
+
+        if (timerInterval) {
+
+            clearInterval(timerInterval);
+
+        }
+
+
+        timerInterval =
+            setInterval(() => {
+
+                if (
+                    !gameState.gameStarted ||
+                    gameState.period === 'intervalo' ||
+                    gameState.period === 'parado'
+                ) {
+
+                    return;
+
+                }
+
+
+                gameState.gameTime =
+                    Math.floor(
+                        (
+                            Date.now() -
+                            gameState.startTime
+                        ) / 1000
+                    );
+
+
+                updateTimer();
+
+
+                /*
+                    Guardamos de forma periódica.
+                */
+
+                saveData();
+
+            }, 100);
+
+    }
+
+
+    function updateTimer() {
+
+        const mins =
+            Math.floor(
+                gameState.gameTime / 60
+            );
+
+
+        const secs =
+            gameState.gameTime % 60;
+
+
+        const display =
+            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+
+        document.getElementById(
+            'timerDisplay'
+        ).textContent = display;
+
+
+        const periodTexts = {
+
+            parado:
+                'Clica em "Iniciar Jogo"',
+
+            primeira:
+                '⏱️ 1ª Parte em Curso',
+
+            intervalo:
+                '⏸️ Intervalo',
+
+            segunda:
+                '⏱️ 2ª Parte em Curso'
+
+        };
+
+
+        document.getElementById(
+            'currentPeriod'
+        ).textContent =
+            periodTexts[
+                gameState.period
+            ] || '';
+
+    }
+
+
+    // ============================================================
+    // REINICIAR JOGO
+    // ============================================================
+
+    function resetGame() {
+
+        const confirmed =
+            confirm(
+                'Tens a certeza? Isto vai reiniciar o jogo e apagar as ações deste jogo.'
+            );
+
+
+        if (!confirmed) return;
+
+
+        /*
+            Antes de apagar, guardamos o jogo no histórico
+            se existirem ações ou informações.
+        */
+
+        if (
+            gameState.gameStarted ||
+            gameState.actions.length > 0 ||
+            gameState.opponentTeam ||
+            gameState.finalScore
+        ) {
+
+            saveGameToHistory();
+
+        }
+
+
+        clearInterval(timerInterval);
+
+        timerInterval = null;
+
+
+        gameState = {
+
+            players: gameState.players,
+
+            actions: [],
+
+            customActions: gameState.customActions,
+
+            gameStarted: false,
+
+            gameTime: 0,
+
+            period: 'parado',
+
+            selectedAction: null,
+
+            selectedPosition:
+                gameState.selectedPosition,
+
+            startTime: 0,
+
+            pauseTime: 0,
+
+            opponentTeam: '',
+
+            finalScore: ''
+
+        };
+
+
+        saveData();
+
+
+        document.getElementById(
+            'opponentTeam'
+        ).value = '';
+
+
+        document.getElementById(
+            'finalScore'
+        ).value = '';
+
+
+        document.getElementById(
+            'startBtn'
+        ).style.display = 'block';
+
+
+        document.getElementById(
+            'halfBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'resumeBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'playerInput'
+        ).disabled = false;
+
+
+        document.querySelectorAll(
+            '.action-btn'
+        ).forEach(button => {
+
+            button.classList.remove(
+                'active'
+            );
+
+        });
+
+
+        document.getElementById(
+            'selectedActionDisplay'
+        ).textContent = '-';
+
+
+        renderPlayers();
+
+        renderActionButtons();
+
+        updateActionStats();
+
+        renderRecentActions();
+
+        updatePlayerSelectors();
+
+        updateTimer();
+
+    }
+
+
+    // ============================================================
+    // HISTÓRICO
+    // ============================================================
+
+    function getHistory() {
+
+        try {
+
+            const saved =
+                localStorage.getItem(
+                    HISTORY_KEY
+                );
+
+            if (!saved) {
+
+                return [];
+
+            }
+
+            const parsed =
+                JSON.parse(saved);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+
+        } catch (error) {
+
+            console.error(
+                'Erro ao carregar histórico:',
+                error
+            );
+
+            return [];
+
+        }
+
+    }
+
+
+    function saveGameToHistory() {
+
+        const history =
+            getHistory();
+
+
+        const game = {
+
+            id: Date.now(),
+
+            date:
+                new Date().toISOString(),
+
+            opponent:
+                gameState.opponentTeam || 'Sem adversário',
+
+            score:
+                gameState.finalScore || '-',
+
+            duration:
+                gameState.gameTime,
+
+            players:
+                [...gameState.players],
+
+            actions:
+                [...gameState.actions]
+
+        };
+
+
+        history.unshift(game);
+
+
+        /*
+            Mantemos os últimos 50 jogos.
+        */
+
+        const limited =
+            history.slice(0, 50);
+
+
+        localStorage.setItem(
+            HISTORY_KEY,
+            JSON.stringify(limited)
+        );
+
+    }
+
+
+    function showGameHistory() {
+
+        const modal =
+            document.getElementById(
+                'historyModal'
+            );
+
+
+        const content =
+            document.getElementById(
+                'historyContent'
+            );
+
+
+        const history =
+            getHistory();
+
+
+        if (history.length === 0) {
+
+            content.innerHTML =
+                '<div class="empty-state">Ainda não existem jogos no histórico.</div>';
+
+        } else {
+
+            content.innerHTML = '';
+
+
+            history.forEach(game => {
+
+                const item =
+                    document.createElement(
+                        'div'
+                    );
+
+                item.className =
+                    'history-item';
+
+
+                const date =
+                    new Date(
+                        game.date
+                    ).toLocaleString(
+                        'pt-PT'
+                    );
+
+
+                const totalActions =
+                    Array.isArray(game.actions)
+                        ? game.actions.length
+                        : 0;
+
+
+                item.innerHTML = `
+                    <strong>
+                        ${escapeHtml(game.opponent)}
+                    </strong>
+
+                    <br>
+
+                    Resultado:
+                    ${escapeHtml(game.score)}
+
+                    <br>
+
+                    Data:
+                    ${escapeHtml(date)}
+
+                    <br>
+
+                    Total de ações:
+                    ${totalActions}
+
+                    <br><br>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="viewHistoricalGame(${game.id})">
+                        Ver
+                    </button>
+
+                    <button
+                        class="btn btn-danger btn-small"
+                        onclick="deleteHistoricalGame(${game.id})">
+                        Eliminar
+                    </button>
+                `;
+
+
+                content.appendChild(item);
+
+            });
+
+        }
+
+
+        modal.classList.add(
+            'active'
+        );
+
+    }
+
+
+    function closeHistory() {
+
+        document
+            .getElementById(
+                'historyModal'
+            )
+            .classList.remove(
+                'active'
+            );
+
+    }
+
+
+    function viewHistoricalGame(id) {
+
+        const history =
+            getHistory();
+
+
+        const game =
+            history.find(
+                item =>
+                    item.id === id
+            );
+
+
+        if (!game) {
+
+            alert(
+                'Jogo não encontrado.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Criamos relatório temporário
+            sem alterar o jogo atual.
+        */
+
+        const currentState =
+            gameState;
+
+
+        gameState = {
+
+            ...gameState,
+
+            players:
+                game.players || [],
+
+            actions:
+                game.actions || [],
+
+            gameTime:
+                game.duration || 0,
+
+            opponentTeam:
+                game.opponent || '',
+
+            finalScore:
+                game.score || '',
+
+            gameStarted:
+                false,
+
+            period:
+                'parado'
+
+        };
+
+
+        showReport();
+
+
+        /*
+            Restaurar o jogo atual.
+        */
+
+        gameState =
+            currentState;
+
+    }
+
+
+    function deleteHistoricalGame(id) {
+
+        const confirmed =
+            confirm(
+                'Queres eliminar este jogo do histórico?'
+            );
+
+
+        if (!confirmed) return;
+
+
+        const history =
+            getHistory();
+
+
+        const newHistory =
+            history.filter(
+                game =>
+                    game.id !== id
+            );
+
+
+        localStorage.setItem(
+            HISTORY_KEY,
+            JSON.stringify(newHistory)
+        );
+
+
+        showGameHistory();
+
+    }
+
+
+    // ============================================================
+    // RELATÓRIO
+    // ============================================================
+
+    function showReport() {
+
+        const report =
+            generateReport();
+
+
+        document.getElementById(
+            'reportContent'
+        ).innerHTML =
+            report;
+
+
+        document.getElementById(
+            'reportModal'
+        ).classList.add(
+            'active'
+        );
+
+    }
+
+
+    function generateReport() {
+
+        const totalTime =
+            gameState.gameTime;
+
+
+        const mins =
+            Math.floor(
+                totalTime / 60
+            );
+
+
+        const secs =
+            totalTime % 60;
+
+
+        /*
+            Estatísticas por jogadora.
+        */
+
+        const stats = {};
+
+
+        gameState.actions.forEach(action => {
+
+            if (!stats[action.player]) {
+
+                stats[action.player] = {};
+
+            }
+
+
+            stats[action.player][action.action] =
+                (
+                    stats[action.player][action.action] ||
+                    0
+                ) + 1;
+
+        });
+
+
+        /*
+            Estatísticas por tipo.
+        */
+
+        const actionsByType = {};
+
+
+        gameState.actions.forEach(action => {
+
+            actionsByType[action.action] =
+                (
+                    actionsByType[action.action] ||
+                    0
+                ) + 1;
+
+        });
+
+
+        const allActionTypes =
+            getAllActions();
+
+
+        let html = `
+
+            <div class="report-section">
+
+                <h3>
+                    📋 Resumo do Jogo
+                </h3>
+
+                <div class="stats-grid"
+                     style="grid-template-columns:1fr 1fr;">
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Adversário
+                        </div>
+
+                        <div class="stat-value">
+                            ${escapeHtml(
+                                gameState.opponentTeam ||
+                                '-'
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Resultado
+                        </div>
+
+                        <div class="stat-value">
+                            ${escapeHtml(
+                                gameState.finalScore ||
+                                '-'
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Duração Total
+                        </div>
+
+                        <div class="stat-value">
+                            ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Total de Ações
+                        </div>
+
+                        <div class="stat-value">
+                            ${gameState.actions.length}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Jogadoras
+                        </div>
+
+                        <div class="stat-value">
+                            ${gameState.players.length}
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-item">
+
+                        <div class="stat-label">
+                            Tipos de Ação
+                        </div>
+
+                        <div class="stat-value">
+                            ${Object.keys(actionsByType).length}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="report-section">
+
+                <h3>
+                    🎯 Ações por Tipo
+                </h3>
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Tipo de Ação</th>
+                            <th>Total</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${
+                            allActionTypes
+                                .map(action => {
+
+                                    const count =
+                                        actionsByType[action] || 0;
+
+                                    return `
+
+                                        <tr>
+
+                                            <td>
+                                                ${escapeHtml(action)}
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    ${count}
+                                                </strong>
+                                            </td>
+
+                                        </tr>
+
+                                    `;
+
+                                })
+                                .join('')
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="report-section">
+
+                <h3>
+                    👩‍🦰 Estatísticas por Jogadora
+                </h3>
+
+                ${
+                    gameState.players
+                        .map(player => {
+
+                            const playerStats =
+                                stats[player.name] || {};
+
+
+                            const total =
+                                Object.values(
+                                    playerStats
+                                )
+                                .reduce(
+                                    (sum, value) =>
+                                        sum + value,
+                                    0
+                                );
+
+
+                            return `
+
+                                <div class="stats-summary">
+
+                                    <h4>
+                                        ${escapeHtml(
+                                            player.name
+                                        )}
+                                    </h4>
+
+                                    <div class="stats-grid">
+
+                                        ${
+                                            allActionTypes
+                                                .map(action => {
+
+                                                    const count =
+                                                        playerStats[action] || 0;
+
+                                                    return `
+
+                                                        <div class="stat-item">
+
+                                                            <div class="stat-label">
+                                                                ${escapeHtml(action)}
+                                                            </div>
+
+                                                            <div class="stat-value">
+                                                                ${count}
+                                                            </div>
+
+                                                        </div>
+
+                                                    `;
+
+                                                })
+                                                .join('')
+                                        }
+
+
+                                        <div class="stat-item">
+
+                                            <div class="stat-label">
+                                                Total
+                                            </div>
+
+                                            <div class="stat-value">
+                                                ${total}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        })
+                        .join('')
+                }
+
+            </div>
+
+
+            <div class="report-section">
+
+                <h3>
+                    📝 Cronograma de Ações
+                </h3>
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Tempo
+                            </th>
+
+                            <th>
+                                Parte
+                            </th>
+
+                            <th>
+                                Jogadora
+                            </th>
+
+                            <th>
+                                Ação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${
+                            gameState.actions
+                                .map(action => {
+
+                                    const t =
+                                        Math.floor(
+                                            action.time / 60
+                                        );
+
+
+                                    const s =
+                                        action.time % 60;
+
+
+                                    const period =
+                                        action.period === 'segunda'
+                                            ? '2ª Parte'
+                                            : '1ª Parte';
+
+
+                                    return `
+
+                                        <tr>
+
+                                            <td>
+                                                ${String(t).padStart(2, '0')}:${String(s).padStart(2, '0')}
+                                            </td>
+
+                                            <td>
+                                                ${period}
+                                            </td>
+
+                                            <td>
+                                                ${escapeHtml(
+                                                    action.player
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                ${escapeHtml(
+                                                    action.action
+                                                )}
+                                            </td>
+
+                                        </tr>
+
+                                    `;
+
+                                })
+                                .join('')
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        `;
+
+
+        return html;
+
+    }
+
+
+    function printReport() {
+
+        window.print();
+
+    }
+
+
+    function closeReport() {
+
+        document
+            .getElementById(
+                'reportModal'
+            )
+            .classList.remove(
+                'active'
+            );
+
+    }
+
+
+    // ============================================================
+    // DARK MODE
+    // ============================================================
+
+    function toggleDarkMode() {
+
+        document.body.classList.toggle(
+            'dark-mode'
+        );
+
+
+        const enabled =
+            document.body.classList.contains(
+                'dark-mode'
+            );
+
+
+        localStorage.setItem(
+            'soccerStatDarkMode',
+            enabled
+        );
+
+    }
+
+
+    function loadDarkMode() {
+
+        const enabled =
+            localStorage.getItem(
+                'soccerStatDarkMode'
+            ) === 'true';
+
+
+        if (enabled) {
+
+            document.body.classList.add(
+                'dark-mode'
+            );
+
+
+            document.getElementById(
+                'darkModeToggle'
+            ).checked = true;
+
+        }
+
+    }
+
+
+    // ============================================================
+    // ESCAPAR HTML
+    // ============================================================
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(
+                /&/g,
+                '&amp;'
+            )
+            .replace(
+                /</g,
+                '&lt;'
+            )
+            .replace(
+                />/g,
+                '&gt;'
+            )
+            .replace(
+                /"/g,
+                '&quot;'
+            )
+            .replace(
+                /'/g,
+                '&#039;'
+            );
+
+    }
+
+
+    // ============================================================
+    // INICIALIZAÇÃO
+    // ============================================================
+
+    loadData();
+
+    loadDarkMode();
+
+
+    /*
+        Carregar informações do jogo.
+    */
+
+    document.getElementById(
+        'opponentTeam'
+    ).value =
+        gameState.opponentTeam || '';
+
+
+    document.getElementById(
+        'finalScore'
+    ).value =
+        gameState.finalScore || '';
+
+
+    renderPlayers();
+
+    renderActionButtons();
+
+    updateActionStats();
+
+    renderRecentActions();
+
+    updateTimer();
+
+    updatePlayerSelectors();
+
+
+    /*
+        Restaurar posição selecionada.
+    */
+
+    if (
+        gameState.selectedPosition
+    ) {
+
+        selectPosition(
+            gameState.selectedPosition
+        );
+
+    }
+
+
+    /*
+        Restaurar interface do temporizador
+        se a página for recarregada durante o jogo.
+    */
+
+    if (
+        gameState.gameStarted &&
+        (
+            gameState.period === 'primeira' ||
+            gameState.period === 'segunda'
+        )
+    ) {
+
+        document.getElementById(
+            'startBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'halfBtn'
+        ).style.display = 'block';
+
+
+        document.getElementById(
+            'resumeBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'playerInput'
+        ).disabled = true;
+
+
+        /*
+            Recalcular o startTime para
+            continuar a partir do tempo guardado.
+        */
+
+        gameState.startTime =
+            Date.now() -
+            (
+                gameState.gameTime * 1000
+            );
+
+
+        startTimer();
+
+    }
+
+
+    /*
+        Se estiver no intervalo.
+    */
+
+    if (
+        gameState.period === 'intervalo'
+    ) {
+
+        document.getElementById(
+            'startBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'halfBtn'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'resumeBtn'
+        ).style.display = 'block';
+
+
+        document.getElementById(
+            'playerInput'
+        ).disabled = true;
+
+    }
+
+
+    // ============================================================
+    // ENTER PARA ADICIONAR JOGADORA
+    // ============================================================
+
+    document
+        .getElementById('playerInput')
+        .addEventListener(
+            'keypress',
+            function(event) {
+
+                if (
+                    event.key === 'Enter'
+                ) {
+
+                    addPlayer();
+
+                }
+
+            }
+        );
+
+
+    // ============================================================
+    // ENTER PARA CRIAR AÇÃO
+    // ============================================================
+
+    document
+        .getElementById('newActionInput')
+        .addEventListener(
+            'keypress',
+            function(event) {
+
+                if (
+                    event.key === 'Enter'
+                ) {
+
+                    createNewAction();
+
+                }
+
+            }
+        );
+
+
+    // ============================================================
+    // FECHAR MODAIS AO CLICAR FORA
+    // ============================================================
+
+    document
+        .getElementById('playerModal')
+        .addEventListener(
+            'click',
+            function(event) {
+
+                if (
+                    event.target ===
+                    document.getElementById(
+                        'playerModal'
+                    )
+                ) {
+
+                    document
+                        .getElementById(
+                            'playerModal'
+                        )
+                        .classList.remove(
+                            'active'
+                        );
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById('newActionModal')
+        .addEventListener(
+            'click',
+            function(event) {
+
+                if (
+                    event.target ===
+                    document.getElementById(
+                        'newActionModal'
+                    )
+                ) {
+
+                    closeNewActionModal();
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById('historyModal')
+        .addEventListener(
+            'click',
+            function(event) {
+
+                if (
+                    event.target ===
+                    document.getElementById(
+                        'historyModal'
+                    )
+                ) {
+
+                    closeHistory();
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById('reportModal')
+        .addEventListener(
+            'click',
+            function(event) {
+
+                if (
+                    event.target ===
+                    document.getElementById(
+                        'reportModal'
+                    )
+                ) {
+
+                    closeReport();
+
+                }
+
+            }
+        );
+
+
 </script>
+
 </body>
 </html>
