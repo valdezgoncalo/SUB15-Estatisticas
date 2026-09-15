@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#667eea">
 <title>Soccer Stat Tracker Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -141,6 +142,72 @@ input[type=text]:focus{border-color:var(--primary)}
 .slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle-switch input:checked+.slider{background:#fff}.toggle-switch input:checked+.slider:before{transform:translateX(22px);background:var(--primary)}
 .custom-action-row{display:flex;gap:7px;margin-top:7px}.custom-action-row input{flex:1}
+/* =========================
+   PDF PROFISSIONAL
+   ========================= */
+.pdf-document{
+  width:794px;
+  max-width:794px;
+  background:#fff;
+  color:#252a34;
+  padding:34px 38px;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.pdf-header{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  padding-bottom:18px;margin-bottom:18px;border-bottom:3px solid #667eea;
+}
+.pdf-brand{display:flex;gap:12px;align-items:center}
+.pdf-brand-icon{
+  width:48px;height:48px;border-radius:12px;background:#667eea;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;
+}
+.pdf-title{font-size:21px;font-weight:900;line-height:1.15}
+.pdf-subtitle{font-size:10px;color:#6b7280;margin-top:4px}
+.pdf-date{text-align:right;font-size:10px;color:#6b7280;line-height:1.5}
+.pdf-match{
+  background:#f4f6fb;border:1px solid #e1e5ee;border-radius:10px;padding:13px 15px;margin-bottom:18px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+}
+.pdf-team{text-align:center;font-size:14px;font-weight:800;word-break:break-word}
+.pdf-score{font-size:24px;font-weight:900;color:#667eea;white-space:nowrap}
+.pdf-section{margin-bottom:20px;page-break-inside:avoid}
+.pdf-section-title{
+  font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;
+  color:#fff;background:#667eea;border-radius:6px;padding:8px 10px;margin-bottom:10px;
+}
+.pdf-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.pdf-kpi{background:#f8f9fc;border:1px solid #e1e5ee;border-radius:8px;padding:9px 5px;text-align:center}
+.pdf-kpi-value{font-size:19px;font-weight:900;color:#667eea}
+.pdf-kpi-label{font-size:8px;color:#6b7280;font-weight:800;text-transform:uppercase;line-height:1.2;margin-top:2px}
+.pdf-table{width:100%;border-collapse:collapse;font-size:9.5px}
+.pdf-table th{background:#f1f3f8;color:#303746;font-weight:900;text-align:left;padding:7px;border-bottom:2px solid #667eea}
+.pdf-table td{padding:7px;border-bottom:1px solid #e1e5ee;vertical-align:top}
+.pdf-table tr{page-break-inside:avoid}
+.pdf-player-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pdf-player-card{border:1px solid #e1e5ee;border-radius:8px;padding:9px;page-break-inside:avoid}
+.pdf-player-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+.pdf-player-name{font-size:10.5px;font-weight:900;word-break:break-word}
+.pdf-player-total{font-size:8px;background:#667eea;color:#fff;border-radius:12px;padding:3px 7px;white-space:nowrap}
+.pdf-chips{display:flex;flex-wrap:wrap;gap:4px}
+.pdf-chip{font-size:8px;background:#f4f6fb;border-radius:5px;padding:4px 5px;color:#4b5563}
+.pdf-footer{margin-top:20px;padding-top:10px;border-top:1px solid #e1e5ee;text-align:center;font-size:8px;color:#9ca3af}
+.pdf-empty{font-size:9px;color:#9ca3af;padding:10px;text-align:center}
+@media(max-width:600px){
+  .pdf-document{width:100%;max-width:100%;padding:20px}
+  .pdf-kpis{grid-template-columns:repeat(3,1fr)}
+  .pdf-player-grid{grid-template-columns:1fr}
+  .pdf-match{grid-template-columns:1fr}
+  .pdf-score{text-align:center}
+  .pdf-date{text-align:left}
+}
+@media print{
+  body.pdf-printing{background:#fff!important;padding:0!important}
+  body.pdf-printing > *:not(#pdfExportContainer){display:none!important}
+  #pdfExportContainer{display:block!important;position:static!important}
+  .pdf-document{width:100%;max-width:none;padding:12mm 10mm}
+}
+
 /* =========================
    RESPONSIVIDADE
    Desktop / Tablet / Telefone
@@ -772,7 +839,8 @@ button{
     <div class="modal-header"><h2>📊 Relatório Detalhado do Jogo</h2><button class="close-btn" onclick="closeModal('reportModal')">✕</button></div>
     <div id="reportContent"></div>
     <div class="button-group btn-group-horizontal">
-      <button class="btn btn-primary" onclick="printReport()">🖨 Imprimir</button>
+      <button class="btn btn-primary" onclick="exportPDF()">📄 Exportar PDF</button>
+      <button class="btn btn-secondary" onclick="printReport()">🖨 Imprimir</button>
       <button class="btn btn-secondary" onclick="closeModal('reportModal')">Fechar</button>
     </div>
   </div>
@@ -1069,6 +1137,73 @@ function generateReport(data=gameState){
   <div class="report-section"><h3>📝 Cronograma de Ações</h3><table class="report-table"><thead><tr><th>Tempo</th><th>Jogadora</th><th>Ação</th><th>Parte</th></tr></thead><tbody>${timeline||'<tr><td colspan="4">Sem ações.</td></tr>'}</tbody></table></div>`;
 }
 function showReport(){document.getElementById('reportContent').innerHTML=generateReport();openModal('reportModal')}
+function buildPDFReport(data=gameState){
+  const actions=data.actions||[], players=data.players||[];
+  const counts={Remate:0,'Remate Enquadrado':0,Assistência:0,'Recuperação de Bola':0,Golo:0};
+  const byType={},byPlayer={};
+  actions.forEach(a=>{
+    byType[a.action]=(byType[a.action]||0)+1;
+    if(counts[a.action]!==undefined)counts[a.action]++;
+    if(!byPlayer[a.player])byPlayer[a.player]={};
+    byPlayer[a.player][a.action]=(byPlayer[a.player][a.action]||0)+1;
+  });
+  const now=new Date();
+  const dateText=now.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const timeText=now.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  const playerNames=new Set(players.map(p=>p.name));
+  const orderedPlayers=[...players.map(p=>p.name),...Object.keys(byPlayer).filter(p=>!playerNames.has(p))];
+  const playersHtml=orderedPlayers.map(name=>{
+    const stats=byPlayer[name]||{};const total=Object.values(stats).reduce((a,b)=>a+b,0);
+    return `<div class="pdf-player-card"><div class="pdf-player-head"><span class="pdf-player-name">${escapeHtml(name)}</span><span class="pdf-player-total">${total} ações</span></div><div class="pdf-chips">${Object.entries(stats).map(([a,n])=>`<span class="pdf-chip">${escapeHtml(a)}: <strong>${n}</strong></span>`).join('')||'<span class="pdf-chip">Sem ações</span>'}</div></div>`;
+  }).join('')||'<div class="pdf-empty">Sem jogadoras registadas.</div>';
+  const typeRows=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([a,n])=>`<tr><td>${escapeHtml(a)}</td><td><strong>${n}</strong></td></tr>`).join('')||'<tr><td colspan="2">Sem ações registadas.</td></tr>';
+  const timeline=[...actions].sort((a,b)=>a.time-b.time).map(a=>`<tr><td>${formatTime(a.time)}</td><td>${escapeHtml(a.player)}</td><td>${escapeHtml(a.action)}</td><td>${a.period==='primeira'?'1ª Parte':a.period==='segunda'?'2ª Parte':'—'}</td></tr>`).join('')||'<tr><td colspan="4">Sem ações registadas.</td></tr>';
+  return `<div class="pdf-document" id="pdfReport">
+    <div class="pdf-header">
+      <div class="pdf-brand"><div class="pdf-brand-icon">⚽</div><div><div class="pdf-title">Soccer Stat Tracker Pro</div><div class="pdf-subtitle">Relatório Estatístico de Jogo</div></div></div>
+      <div class="pdf-date">Emitido em ${dateText}<br>${timeText}</div>
+    </div>
+    <div class="pdf-match"><div class="pdf-team">SPORTING / EQUIPA</div><div class="pdf-score">${escapeHtml(data.score||'—')}</div><div class="pdf-team">${escapeHtml(data.opponent||'Adversário não indicado')}</div></div>
+    <div class="pdf-section"><div class="pdf-section-title">Resumo Estatístico</div><div class="pdf-kpis">
+      <div class="pdf-kpi"><div class="pdf-kpi-value">${counts.Remate}</div><div class="pdf-kpi-label">Remates</div></div>
+      <div class="pdf-kpi"><div class="pdf-kpi-value">${counts['Remate Enquadrado']}</div><div class="pdf-kpi-label">Enquadrados</div></div>
+      <div class="pdf-kpi"><div class="pdf-kpi-value">${counts.Assistência}</div><div class="pdf-kpi-label">Assistências</div></div>
+      <div class="pdf-kpi"><div class="pdf-kpi-value">${counts['Recuperação de Bola']}</div><div class="pdf-kpi-label">Recuperações</div></div>
+      <div class="pdf-kpi"><div class="pdf-kpi-value">${counts.Golo}</div><div class="pdf-kpi-label">Golos</div></div>
+    </div></div>
+    <div class="pdf-section"><div class="pdf-section-title">Informação do Jogo</div><table class="pdf-table"><tbody>
+      <tr><th>Duração</th><td>${formatTime(data.gameTime)}</td><th>Total de ações</th><td>${actions.length}</td></tr>
+      <tr><th>Jogadoras</th><td>${players.length}</td><th>Ações diferentes</th><td>${Object.keys(byType).length}</td></tr>
+    </tbody></table></div>
+    <div class="pdf-section"><div class="pdf-section-title">Ações por Tipo</div><table class="pdf-table"><thead><tr><th>Ação</th><th>Total</th></tr></thead><tbody>${typeRows}</tbody></table></div>
+    <div class="pdf-section"><div class="pdf-section-title">Estatísticas por Jogadora</div><div class="pdf-player-grid">${playersHtml}</div></div>
+    <div class="pdf-section"><div class="pdf-section-title">Cronograma de Ações</div><table class="pdf-table"><thead><tr><th>Tempo</th><th>Jogadora</th><th>Ação</th><th>Parte</th></tr></thead><tbody>${timeline}</tbody></table></div>
+    <div class="pdf-footer">Soccer Stat Tracker Pro · Relatório gerado automaticamente</div>
+  </div>`;
+}
+async function exportPDF(){
+  const container=document.createElement('div');
+  container.id='pdfExportContainer';
+  container.style.position='fixed';container.style.left='-100000px';container.style.top='0';container.style.zIndex='-1';
+  container.innerHTML=buildPDFReport();
+  document.body.appendChild(container);
+  const opponent=(document.getElementById('opponentTeam')?.value||'Adversário').trim().replace(/[^a-zA-Z0-9À-ÿ _-]/g,'').replace(/\s+/g,'-')||'Adversário';
+  const score=(document.getElementById('finalScore')?.value||'').trim().replace(/[^0-9xX-]/g,'');
+  const date=new Date().toISOString().slice(0,10);
+  const filename=`Relatorio_SoccerStat_${opponent}${score?'-'+score:''}_${date}.pdf`;
+  try{
+    if(typeof html2pdf!=='function')throw new Error('Biblioteca PDF indisponível');
+    await html2pdf().set({
+      margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}
+    }).from(container.querySelector('.pdf-document')).save();
+  }catch(error){
+    console.error(error);
+    alert('Não foi possível gerar o PDF automaticamente. Vou abrir a impressão para poderes escolher “Guardar como PDF”.');
+    const previous=document.title;document.title=filename.replace('.pdf','');document.body.classList.add('pdf-printing');window.print();document.body.classList.remove('pdf-printing');document.title=previous;
+  }finally{
+    container.remove();
+  }
+}
 function printReport(){window.print()}
 function openModal(id){document.getElementById(id).classList.add('active')}
 function closeModal(id){document.getElementById(id).classList.remove('active')}
