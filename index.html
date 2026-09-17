@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soccer Stat Tracker Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,7 +16,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00A041 0%, #008C3A 100%);
             min-height: 100vh;
             padding: 10px;
         }
@@ -30,7 +31,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00A041 0%, #008C3A 100%);
             color: white;
             padding: 20px;
             display: flex;
@@ -90,8 +91,8 @@
         }
 
         .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: #00A041;
+            border-bottom-color: #00A041;
             background: white;
         }
 
@@ -120,7 +121,7 @@
             color: #333;
             margin-bottom: 15px;
             font-size: 1.3em;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #00A041;
             padding-bottom: 10px;
         }
 
@@ -151,12 +152,12 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #00A041;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #007A35;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
@@ -219,7 +220,7 @@
 
         .input-group input:focus, .input-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #00A041;
         }
 
         .player-list {
@@ -231,8 +232,8 @@
 
         .player-tag {
             background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
+            border: 2px solid #00A041;
+            color: #00A041;
             padding: 8px 12px;
             border-radius: 20px;
             font-size: 0.9em;
@@ -245,7 +246,7 @@
         .player-tag button {
             background: none;
             border: none;
-            color: #667eea;
+            color: #00A041;
             font-size: 1.2em;
             cursor: pointer;
         }
@@ -274,15 +275,15 @@
         }
 
         .action-btn:hover {
-            border-color: #667eea;
+            border-color: #00A041;
             background: #f0f4ff;
             transform: translateY(-2px);
         }
 
         .action-btn.active {
-            background: #667eea;
+            background: #00A041;
             color: white;
-            border-color: #667eea;
+            border-color: #00A041;
         }
 
         .player-buttons {
@@ -294,16 +295,16 @@
         .player-btn {
             padding: 12px;
             background: #f0f4ff;
-            border: 2px solid #667eea;
+            border: 2px solid #00A041;
             border-radius: 8px;
-            color: #667eea;
+            color: #00A041;
             font-weight: 600;
             cursor: pointer;
             font-size: 0.9em;
         }
 
         .player-btn:hover {
-            background: #667eea;
+            background: #00A041;
             color: white;
         }
 
@@ -346,7 +347,7 @@
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #00A041;
         }
 
         .stats-grid {
@@ -369,7 +370,7 @@
         }
 
         .stat-value {
-            color: #667eea;
+            color: #00A041;
             font-weight: bold;
             font-size: 1.5em;
         }
@@ -387,7 +388,7 @@
         }
 
         .comparison-table th {
-            background: #667eea;
+            background: #00A041;
             color: white;
             padding: 12px;
             text-align: left;
@@ -419,7 +420,7 @@
         }
 
         .game-card:hover {
-            border-color: #667eea;
+            border-color: #00A041;
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
@@ -448,7 +449,7 @@
 
         .efficiency-badge {
             display: inline-block;
-            background: #667eea;
+            background: #00A041;
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -965,7 +966,7 @@
             const html = recent.map((action, displayIndex) => {
                 const actualIndex = gameState.actions.length - 1 - displayIndex;
                 return `
-                    <div style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 3px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 3px solid #00A041; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-weight: 600; color: #333;">${action.player}</div>
                             <div style="font-size: 0.85em; color: #666;">${action.action} • ${formatTime(action.time)}</div>
@@ -1139,7 +1140,7 @@
                     datasets: [{
                         data: Object.values(actionCounts),
                         backgroundColor: [
-                            '#667eea', '#48bb78', '#ed8936', '#f56565'
+                            '#00A041', '#48bb78', '#ed8936', '#f56565'
                         ]
                     }]
                 },
@@ -1172,7 +1173,7 @@
                     datasets: [{
                         label: 'Total de Ações',
                         data: Object.values(stats),
-                        backgroundColor: '#667eea'
+                        backgroundColor: '#00A041'
                     }]
                 },
                 options: {
@@ -1206,7 +1207,7 @@
                     datasets: [{
                         label: 'Ações',
                         data: [periodData.primeira, periodData.intervalo, periodData.segunda],
-                        borderColor: '#667eea',
+                        borderColor: '#00A041',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         tension: 0.4
                     }]
@@ -1395,108 +1396,119 @@
             });
 
             element.innerHTML = `
-                <style>
-                    body { font-family: Arial, sans-serif; }
-                    .header { background: #667eea; color: white; padding: 20px; margin: -10px -10px 20px -10px; }
-                    .header h1 { margin: 0; }
-                    .section { margin-bottom: 30px; }
-                    .section h2 { color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                    th { background: #f0f4ff; padding: 10px; text-align: left; border-bottom: 2px solid #667eea; }
-                    td { padding: 10px; border-bottom: 1px solid #e0e0e0; }
-                    .summary { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
-                    .notes { background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin-top: 20px; }
-                </style>
-                <div class="header">
-                    <h1>⚽ Relatório de Jogo</h1>
-                    <p><strong>${gameState.gameName || 'Jogo'}</strong></p>
-                    ${gameState.gameResult ? `<p style="color: #48bb78; font-weight: 600; font-size: 1.2em;">Resultado: ${gameState.gameResult}</p>` : ''}
-                    <p>Data: ${date} | Duração: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} | Total de Ações: ${gameState.actions.length}</p>
-                </div>
-
-                <div class="section">
-                    <h2>📋 Resumo</h2>
-                    <div class="summary">
-                        <strong>Jogadoras em Campo:</strong> ${gameState.players.length}<br>
-                        <strong>Total de Ações:</strong> ${gameState.actions.length}<br>
-                        <strong>Duração Total:</strong> ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}<br>
-                        <strong>Média de Ações/Jogadora:</strong> ${(gameState.actions.length / Math.max(gameState.players.length, 1)).toFixed(1)}
+                <div style="font-family: Arial, sans-serif; padding: 20px; background: white;">
+                    <div style="background: #00A041; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+                        <h1 style="margin: 0 0 10px 0; font-size: 28px;">⚽ Relatório de Jogo</h1>
+                        <p style="margin: 5px 0; font-size: 16px; font-weight: bold;">${gameState.gameName || 'Jogo'}</p>
+                        ${gameState.gameResult ? `<p style="margin: 5px 0; color: #48bb78; font-weight: 600; font-size: 18px;">🎯 Resultado: ${gameState.gameResult}</p>` : ''}
+                        <p style="margin: 10px 0 0 0; font-size: 13px;">Data: ${date} | Duração: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} | Total de Ações: ${gameState.actions.length}</p>
                     </div>
-                </div>
 
-                <div class="section">
-                    <h2>🎯 Distribuição de Ações</h2>
-                    <table>
-                        <tr>
-                            <th>Tipo de Ação</th>
-                            <th>Total</th>
-                            <th>Percentagem</th>
-                        </tr>
-                        ${Object.entries(actionCounts).map(([action, count]) => `
-                            <tr>
-                                <td>${action}</td>
-                                <td>${count}</td>
-                                <td>${((count / gameState.actions.length) * 100).toFixed(1)}%</td>
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #00A041; border-bottom: 2px solid #00A041; padding-bottom: 10px; margin-bottom: 15px;">📋 Resumo</h2>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                            <p style="margin: 8px 0;"><strong>Jogadoras em Campo:</strong> ${gameState.players.length}</p>
+                            <p style="margin: 8px 0;"><strong>Total de Ações:</strong> ${gameState.actions.length}</p>
+                            <p style="margin: 8px 0;"><strong>Duração Total:</strong> ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}</p>
+                            <p style="margin: 8px 0;"><strong>Média de Ações/Jogadora:</strong> ${(gameState.actions.length / Math.max(gameState.players.length, 1)).toFixed(1)}</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #00A041; border-bottom: 2px solid #00A041; padding-bottom: 10px; margin-bottom: 15px;">🎯 Distribuição de Ações</h2>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background: #f0f4ff;">
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #00A041;">Tipo de Ação</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #00A041;">Total</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #00A041;">Percentagem</th>
                             </tr>
-                        `).join('')}
-                    </table>
-                </div>
-
-                <div class="section">
-                    <h2>👩‍🦰 Estatísticas por Jogadora</h2>
-                    ${Object.entries(stats).map(([player, playerStats]) => {
-                        const total = Object.values(playerStats).reduce((a, b) => a + b, 0);
-                        return `
-                            <div class="summary">
-                                <strong>${player}</strong><br>
-                                ${Object.entries(playerStats).map(([action, count]) => `${action}: ${count}`).join(' | ')}<br>
-                                <strong>Total: ${total}</strong>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-
-                <div class="section">
-                    <h2>📝 Cronograma de Ações</h2>
-                    <table>
-                        <tr>
-                            <th>Tempo</th>
-                            <th>Período</th>
-                            <th>Jogadora</th>
-                            <th>Ação</th>
-                        </tr>
-                        ${gameState.actions.map(a => {
-                            const t = Math.floor(a.time / 60);
-                            const s = a.time % 60;
-                            return `
-                                <tr>
-                                    <td>${String(t).padStart(2, '0')}:${String(s).padStart(2, '0')}</td>
-                                    <td>${a.period}</td>
-                                    <td>${a.player}</td>
-                                    <td>${a.action}</td>
+                            ${Object.entries(actionCounts).map(([action, count]) => `
+                                <tr style="border-bottom: 1px solid #e0e0e0;">
+                                    <td style="padding: 10px;">${action}</td>
+                                    <td style="padding: 10px;">${count}</td>
+                                    <td style="padding: 10px;">${((count / gameState.actions.length) * 100).toFixed(1)}%</td>
                                 </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #00A041; border-bottom: 2px solid #00A041; padding-bottom: 10px; margin-bottom: 15px;">👩‍🦰 Estatísticas por Jogadora</h2>
+                        ${Object.entries(stats).map(([player, playerStats]) => {
+                            const total = Object.values(playerStats).reduce((a, b) => a + b, 0);
+                            return `
+                                <div style="background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #00A041;">
+                                    <p style="margin: 0 0 8px 0;"><strong>${player}</strong></p>
+                                    <p style="margin: 0 0 8px 0;">${Object.entries(playerStats).map(([action, count]) => `${action}: ${count}`).join(' | ')}</p>
+                                    <p style="margin: 0; color: #00A041; font-weight: bold;">Total: ${total}</p>
+                                </div>
                             `;
                         }).join('')}
-                    </table>
-                </div>
-
-                ${gameState.notes ? `
-                    <div class="notes">
-                        <strong>📝 Notas do Jogo:</strong><br>
-                        ${gameState.notes.replace(/\n/g, '<br>')}
                     </div>
-                ` : ''}
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #00A041; border-bottom: 2px solid #00A041; padding-bottom: 10px; margin-bottom: 15px;">📝 Cronograma de Ações</h2>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <tr style="background: #f0f4ff;">
+                                <th style="padding: 8px; text-align: left; border-bottom: 2px solid #00A041;">Tempo</th>
+                                <th style="padding: 8px; text-align: left; border-bottom: 2px solid #00A041;">Período</th>
+                                <th style="padding: 8px; text-align: left; border-bottom: 2px solid #00A041;">Jogadora</th>
+                                <th style="padding: 8px; text-align: left; border-bottom: 2px solid #00A041;">Ação</th>
+                            </tr>
+                            ${gameState.actions.map(a => {
+                                const t = Math.floor(a.time / 60);
+                                const s = a.time % 60;
+                                return `
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 8px;">${String(t).padStart(2, '0')}:${String(s).padStart(2, '0')}</td>
+                                        <td style="padding: 8px;">${a.period}</td>
+                                        <td style="padding: 8px;">${a.player}</td>
+                                        <td style="padding: 8px;">${a.action}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </table>
+                    </div>
+
+                    ${gameState.notes ? `
+                        <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin-top: 20px; border-radius: 5px;">
+                            <strong>📝 Notas do Jogo:</strong><br>
+                            ${gameState.notes.replace(/\n/g, '<br>')}
+                        </div>
+                    ` : ''}
+                </div>
             `;
 
-            const opt = {
-                margin: 10,
-                filename: `relatorio_jogo_${new Date(gameState.gameDate).toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-            };
+            document.body.appendChild(element);
+            
+            html2canvas(element, { 
+                scale: 2,
+                allowTaint: true,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210;
+                const pageHeight = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
 
-            html2pdf().set(opt).from(element).save();
+                const imgData = canvas.toDataURL('image/png');
+                
+                while (heightLeft >= 0) {
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    position -= pageHeight;
+                    if (heightLeft > 0) {
+                        pdf.addPage();
+                    }
+                }
+
+                pdf.save(`relatorio_jogo_${new Date(gameState.gameDate).toISOString().split('T')[0]}.pdf`);
+                document.body.removeChild(element);
+            });
         }
 
         function exportGamePDF(index) {
