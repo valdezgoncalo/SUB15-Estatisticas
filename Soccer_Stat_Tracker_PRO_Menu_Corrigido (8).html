@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soccer Stat Tracker Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #00A041 0%, #008C3A 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+
+        /* ===== MENU INICIAL DE JOGOS ===== */
+        #gameHomeOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: linear-gradient(135deg, rgba(0, 128, 58, 0.98), rgba(0, 160, 65, 0.96));
+            overflow-y: auto;
+            padding: 30px 15px;
+        }
+        .game-home {
+            max-width: 1150px;
+            margin: 0 auto;
+            color: #fff;
+        }
+        .game-home-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .game-home-title h1 { font-size: 2.2rem; margin-bottom: 6px; }
+        .game-home-title p { opacity: .9; }
+        .game-home-actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .home-btn {
+            border: 0; border-radius: 10px; padding: 12px 18px; cursor:pointer;
+            font-weight:700; font-size:.95rem; background:#fff; color:#008c3a;
+            box-shadow:0 5px 18px rgba(0,0,0,.15);
+        }
+        .home-btn.secondary { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.35); }
+        .game-home-panel {
+            background:#fff; color:#333; border-radius:16px; padding:22px;
+            box-shadow:0 15px 45px rgba(0,0,0,.2); margin-bottom:18px;
+        }
+        .home-section-title { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:15px; }
+        .home-section-title h2 { color:#008c3a; font-size:1.25rem; }
+        .folder-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+        .folder-card {
+            border:2px solid #e6e6e6; border-radius:13px; padding:18px; cursor:pointer;
+            background:#fafafa; transition:.2s; position:relative;
+        }
+        .folder-card:hover { border-color:#00a041; transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.08); }
+        .folder-card .folder-icon { font-size:2rem; margin-bottom:8px; }
+        .folder-card h3 { font-size:1rem; margin-bottom:5px; color:#222; }
+        .folder-card p { font-size:.85rem; color:#777; }
+        .folder-card.no-folder { border-style:dashed; }
+        .home-games { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
+        .home-game-card { border:1px solid #e2e2e2; border-radius:12px; padding:15px; background:#fff; }
+        .home-game-card h3 { font-size:1rem; margin-bottom:6px; color:#222; }
+        .home-game-meta { color:#777; font-size:.84rem; line-height:1.6; }
+        .home-game-buttons { display:flex; gap:7px; margin-top:12px; }
+        .home-game-buttons button { flex:1; border:0; border-radius:8px; padding:9px 8px; cursor:pointer; font-weight:600; }
+        .home-open { background:#008c3a; color:#fff; }
+        .home-delete { background:#f1f1f1; color:#c0392b; }
+        .home-empty { text-align:center; padding:25px; color:#888; background:#fafafa; border-radius:10px; }
+        #homeFolderView { display:none; }
+        .home-back { margin-bottom:15px; border:0; background:#eef7f1; color:#008c3a; padding:9px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+        @media(max-width:600px){
+            #gameHomeOverlay{padding:18px 10px}.game-home-title h1{font-size:1.7rem}.game-home-panel{padding:16px}.folder-grid{grid-template-columns:1fr 1fr}.home-games{grid-template-columns:1fr}.game-home-actions{width:100%}.home-btn{flex:1}
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00A041 0%, #008C3A 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .current-period {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .game-date {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            color: #00A041;
+            border-bottom-color: #00A041;
+            background: white;
+        }
+
+        .content {
+            padding: 20px;
+            min-height: 600px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #00A041;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .btn-primary {
+            background: #00A041;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #007A35;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input, .input-group textarea {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            min-width: 150px;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #00A041;
+        }
+
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .player-tag {
+            background: white;
+            border: 2px solid #00A041;
+            color: #00A041;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-tag button {
+            background: none;
+            border: none;
+            color: #00A041;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .player-tag button:hover {
+            color: #f56565;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            border-color: #00A041;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: #00A041;
+            color: white;
+            border-color: #00A041;
+        }
+
+        .player-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .player-btn {
+            padding: 12px;
+            background: #f0f4ff;
+            border: 2px solid #00A041;
+            border-radius: 8px;
+            color: #00A041;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .player-btn:hover {
+            background: #00A041;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .stats-summary {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00A041;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .stat-value {
+            color: #00A041;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .comparison-table th {
+            background: #00A041;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .game-history {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .game-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover {
+            border-color: #00A041;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .game-card-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .game-card-info {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .game-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .game-card-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85em;
+        }
+
+        .efficiency-badge {
+            display: inline-block;
+            background: #00A041;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .efficiency-high {
+            background: #48bb78;
+        }
+
+        .efficiency-medium {
+            background: #ed8936;
+        }
+
+        .efficiency-low {
+            background: #f56565;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-left, .header-right {
+                width: 100%;
+                text-align: center;
+            }
+
+            .tabs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .tabs, .header-controls {
+                display: none;
+            }
+        }
+
+        /* ===== PLANTEL ===== */
+        .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:15px}
+        .roster-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;overflow:hidden}
+        .roster-card.selected{border-color:#48bb78;background:#f0fff4}
+        .roster-info{display:flex;align-items:center;gap:10px;min-width:0}
+        .roster-number{width:34px;height:34px;border-radius:50%;background:#edf2f7;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+        .roster-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .roster-position{font-size:.8rem;color:#718096;margin-top:2px}
+        .roster-actions{display:flex;gap:6px;flex:none;align-items:center;flex-wrap:wrap;justify-content:flex-end}.roster-actions .btn{flex:0 0 auto;min-width:auto;padding:8px 10px}.roster-form{display:grid;grid-template-columns:minmax(0,2fr) minmax(80px,.6fr) minmax(0,1.4fr) auto;gap:10px;align-items:center;margin-top:15px}.roster-form input{width:100%;min-width:0;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:.95em}.roster-form .btn{width:auto;white-space:nowrap}.roster-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.roster-search{flex:1;min-width:220px;padding:11px 12px;border:2px solid #e0e0e0;border-radius:8px}.roster-filter{padding:11px 12px;border:2px solid #e0e0e0;border-radius:8px;background:#fff;min-width:160px}@media(max-width:760px){.roster-form{grid-template-columns:1fr 90px}.roster-form input:nth-child(3){grid-column:1/-1}.roster-form .btn{grid-column:1/-1;width:100%}.roster-card{align-items:flex-start}.roster-actions{width:100%;margin-top:8px}.roster-card{flex-direction:column}.roster-info{width:100%}.roster-actions .btn{flex:1}.roster-grid{grid-template-columns:1fr}}
+        .convocation-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .convocation-chip{padding:8px 12px;border-radius:999px;background:#edf2f7;font-weight:600}
+        .roster-empty{padding:25px;text-align:center;color:#718096;border:2px dashed #cbd5e0;border-radius:12px}
+        .roster-form > * { min-width:0; }
+        .roster-form .btn { min-height:46px; }
+        .roster-card { min-height:76px; }
+        .roster-actions { max-width:100%; }
+        .roster-actions .btn { min-height:40px; }
+        .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:15px}
+        .profile-stat{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px}.profile-stat .label{font-size:.78rem;color:#718096}.profile-stat .value{font-size:1.35rem;font-weight:800;color:#008c3a;margin-top:4px}
+        .athlete-profile-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-top:15px}
+        .athlete-profile-head{display:flex;align-items:center;gap:15px;flex-wrap:wrap}.athlete-avatar{width:64px;height:64px;border-radius:50%;background:#edf2f7;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#008c3a;overflow:hidden}.athlete-avatar img{width:100%;height:100%;object-fit:cover}
+        .season-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:15px}
+        .dashboard-card{background:linear-gradient(135deg,#f0fff4,#fff);border:1px solid #c6f6d5;border-radius:12px;padding:15px}.dashboard-card .big{font-size:1.65rem;font-weight:800;color:#008c3a}.dashboard-card .small{font-size:.8rem;color:#718096}
+        .substitution-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}.substitution-section{border-left:4px solid #00A041}.substitution-section .btn{min-height:42px;white-space:nowrap}.substitution-list{margin-top:12px}.substitution-item{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:7px}
+        @media(max-width:760px){.substitution-grid{grid-template-columns:1fr 1fr}.substitution-grid .btn{grid-column:1/-1;width:100%}.roster-form{grid-template-columns:1fr 90px}.roster-form input:nth-child(3){grid-column:1/-1}.roster-form .btn{grid-column:1/-1;width:100%}}
+
+    </style>
+</head>
+<body>
+
+    <!-- ===== MENU INICIAL DE JOGOS ===== -->
+    <div id="gameHomeOverlay">
+        <div class="game-home">
+            <div class="game-home-header">
+                <div class="game-home-title">
+                    <h1>⚽ Soccer Stat Tracker PRO</h1>
+                    <p>Escolhe uma pasta ou abre um jogo para começar.</p>
+                </div>
+                <div class="game-home-actions">
+                    <button class="home-btn" onclick="homeCreateNewGame(null)">➕ Novo Jogo</button>
+                    <button class="home-btn secondary" onclick="homeCreateFolder()">📁 Nova Pasta</button>
+                    <button class="home-btn secondary" onclick="continueCurrentGame()">▶️ Continuar</button>
+                </div>
+            </div>
+
+            <div id="homeMainView">
+                <div class="game-home-panel">
+                    <div class="home-section-title">
+                        <h2>📁 As minhas pastas</h2>
+                        <span id="homeFolderCount" style="color:#777;font-size:.9rem;"></span>
+                    </div>
+                    <div id="homeFolderGrid" class="folder-grid"></div>
+                </div>
+
+                <div class="game-home-panel">
+                    <div class="home-section-title">
+                        <h2>🕘 Jogos recentes</h2>
+                    </div>
+                    <div id="homeRecentGames" class="home-games"></div>
+                </div>
+            </div>
+
+            <div id="homeFolderView" class="game-home-panel">
+                <button class="home-back" onclick="showHomeMain()">← Voltar às pastas</button>
+                <div class="home-section-title">
+                    <h2 id="homeFolderTitle">📁 Pasta</h2>
+                    <span id="homeFolderGameCount" style="color:#777;font-size:.9rem;"></span>
+                </div>
+                <div id="homeFolderGames" class="home-games"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>⚽ Soccer Stat Tracker PRO</h1>
+                <div class="timer-display" id="timerDisplay">00:00</div>
+                <div class="current-period" id="currentPeriod">Clica em "Iniciar Jogo"</div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-info" onclick="returnToGameHome()" style="margin-bottom:10px; padding:9px 14px; white-space:nowrap;">🏠 Menu Inicial</button>
+                <div class="game-date" id="gameDate"></div>
+                <div id="gameHeaderInfo" style="margin-top: 10px; font-size: 1.1em; font-weight: 600;"></div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('jogo')">⏱️ Jogo em Curso</div>
+            <div class="tab" onclick="switchTab('plantel')">👥 Plantel</div>
+            <div class="tab" onclick="switchTab('epoca')">📈 Época</div>
+            <div class="tab" onclick="switchTab('analise')">📊 Análise</div>
+            <div class="tab" onclick="switchTab('comparacao')">🔄 Comparação</div>
+            <div class="tab" onclick="switchTab('historico')">📋 Histórico</div>
+            <div class="tab" onclick="switchTab('notas')">📝 Notas</div>
+        </div>
+
+        <div class="content">
+            <!-- TAB: JOGO EM CURSO -->
+            <div id="jogo" class="tab-content active">
+                <div class="section">
+                    <h2>Informações do Jogo</h2>
+                    <div class="input-group">
+                        <input type="text" id="gameName" placeholder="Nome do jogo (ex: Jogo vs Benfica)" onchange="saveGameInfo()">
+                        <input type="text" id="gameResult" placeholder="Resultado (ex: 3-2)" onchange="saveGameInfo()" style="flex: 0 1 120px;">
+                        <select id="gameCompetition" onchange="saveGameInfo()" style="flex:0 1 220px;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:.95em;"><option value="">🏟️ Competição</option><option>Campeonato</option><option>Taça</option><option>Torneio</option><option>Amigável</option><option>Outro</option></select>
+                        <select id="gameFolderSelect" onchange="changeCurrentGameFolder()" style="flex: 0 1 220px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;">
+                            <option value="">🗂️ Sem pasta</option>
+                        </select>
+                        <select id="gameSeasonSelect" onchange="changeCurrentGameSeason()" style="flex: 0 1 220px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;">
+                            <option value="">📅 Sem época</option>
+                        </select>
+                        <button class="btn btn-info" onclick="createSeason()" style="flex:0 0 auto;">➕ Época</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>👥 Jogadoras Convocadas</h2>
+                    <p style="color:#666;margin-bottom:12px;">Seleciona neste jogo apenas as jogadoras que vão a jogo. O plantel completo fica guardado na aba <strong>Plantel</strong>.</p>
+                    <div id="gameSquadSelector" class="roster-grid"></div>
+                    <div id="gameSquadSummary" style="margin-top:12px;font-weight:700;color:#2d3748;"></div>
+                </div>
+
+                <div class="section">
+                    <h2>Controlo do Jogo</h2>
+                    <div class="button-group">
+                        <button class="btn btn-success" id="startBtn" onclick="startGame()">▶️ Iniciar Jogo</button>
+                        <button class="btn btn-warning" id="halfBtn" onclick="toggleHalftime()" style="display: none;">⏸️ Intervalo</button>
+                        <button class="btn btn-success" id="resumeBtn" onclick="resumeGame()" style="display: none;">▶️ 2ª Parte</button>
+                        <button class="btn btn-danger" id="finishGameBtn" onclick="finishGame()" style="display: none;">🏁 Terminar Jogo</button>
+                    </div>
+                    <button class="btn btn-danger" onclick="resetGame()" style="width: 100%;">🔄 Reiniciar Jogo</button>
+                </div>
+
+                <div class="section">
+                    <h2>Registar Ação</h2>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;">1. Escolhe a ação:</p>
+                    <div class="action-grid" id="actionsGrid"></div>
+
+                    <p style="color: #666; margin-top: 20px; margin-bottom: 15px; font-size: 0.95em;">2. Escolhe a jogadora:</p>
+                    <div class="player-buttons" id="playerSelectArea"></div>
+                </div>
+
+                <div class="section substitution-section">
+                    <h2>🔄 Substituições</h2>
+                    <p style="color:#666;margin-bottom:12px;font-size:.9em;">Seleciona quem sai e quem entra. O minuto é registado automaticamente pelo cronómetro do jogo.</p>
+                    <div class="substitution-grid">
+                        <div><label style="font-size:.8rem;color:#718096;">Sai</label><select id="subOut" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;"></select></div>
+                        <div><label style="font-size:.8rem;color:#718096;">Entra</label><select id="subIn" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;"></select></div>
+                        <button class="btn btn-info" onclick="addSubstitution()">🔄 Registar Substituição</button>
+                    </div>
+                    <div id="substitutionList" class="substitution-list"></div>
+                </div>
+
+                <div class="section" id="statsLiveSection" style="display: none;">
+                    <h2>⚡ Estatísticas em Tempo Real</h2>
+                    <div id="liveStats"></div>
+                </div>
+
+                <div class="section">
+                    <h2>📝 Últimas Ações Registadas</h2>
+                    <div id="recentActionsDisplay" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+
+                <div class="section">
+                    <h2>➕ Criar Ação Customizada</h2>
+                    <div class="input-group">
+                        <input type="text" id="customActionName" placeholder="Nome da ação (ex: Drible, Interceptação)">
+                        <input type="text" id="customActionEmoji" placeholder="Emoji (ex: 🎯)" style="flex: 0 1 60px;">
+                        <button class="btn btn-primary" onclick="addCustomAction()">Adicionar</button>
+                    </div>
+                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">As ações customizadas aparecem na lista de ações acima.</p>
+
+                    <h3 style="margin-top: 20px;">Ações Customizadas Criadas</h3>
+                    <div id="customActionsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- TAB: PLANTEL -->
+            <div id="plantel" class="tab-content">
+                <div class="section">
+                    <h2>👥 Plantel</h2>
+                    <p style="color:#666;">Cria aqui todas as jogadoras da equipa. Depois, em cada jogo, escolhes apenas as convocadas.</p>
+                    <div class="roster-form">
+                        <input type="text" id="rosterPlayerName" placeholder="Nome da jogadora...">
+                        <input type="text" id="rosterPlayerNumber" placeholder="N.º">
+                        <input type="text" id="rosterPlayerPosition" placeholder="Posição (ex: GR, DC, MC...)">
+                        <button class="btn btn-primary" onclick="addRosterPlayer()">➕ Adicionar</button>
+                    </div>
+                    <div id="athleteProfilePanel" class="athlete-profile-card" style="display:none;"></div>
+                    <div class="roster-toolbar">
+                        <input class="roster-search" id="rosterSearch" type="search" placeholder="🔎 Procurar jogadora..." oninput="renderRoster()">
+                        <select class="roster-filter" id="rosterPositionFilter" onchange="renderRoster()">
+                            <option value="">Todas as posições</option>
+                        </select>
+                    </div>
+                    <div id="rosterList" class="roster-grid"></div>
+                </div>
+            </div>
+
+            <!-- TAB: ÉPOCA -->
+            <div id="epoca" class="tab-content">
+                <div class="section">
+                    <h2>📈 Estatísticas da Época</h2>
+                    <div class="input-group">
+                        <select id="seasonStatsSelect" onchange="renderSeasonStats()" style="flex:1;padding:12px;border:2px solid #e0e0e0;border-radius:8px;"></select>
+                        <button class="btn btn-info" onclick="createSeason()">➕ Nova Época</button>
+                    </div>
+                    <div id="seasonSummary" style="margin-top:15px;"></div>
+                    <div id="seasonDashboard" class="season-dashboard"></div>
+                    <div style="overflow-x:auto;margin-top:15px;">
+                        <table class="comparison-table">
+                            <thead><tr><th>Jogadora</th><th>Jogos</th><th>Titular</th><th>Minutos</th><th>Ações</th><th>Golos</th><th>Assistências</th><th>Remates</th><th>Enquadrados</th><th>Recuperações</th></tr></thead>
+                            <tbody id="seasonStatsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: ANÁLISE -->
+            <div id="analise" class="tab-content">
+                <div class="section">
+                    <h2>📊 Gráficos e Análise</h2>
+                    
+                    <h3>Distribuição de Ações</h3>
+                    <div class="chart-container">
+                        <canvas id="actionsChart"></canvas>
+                    </div>
+
+                    <h3>Ações por Jogadora</h3>
+                    <div class="chart-container">
+                        <canvas id="playersChart"></canvas>
+                    </div>
+
+                    <h3>Atividade por Período</h3>
+                    <div class="chart-container">
+                        <canvas id="periodChart"></canvas>
+                    </div>
+
+                    <h3>Top Ações</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Ação</th>
+                                <th>Total</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topActionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: COMPARAÇÃO -->
+            <div id="comparacao" class="tab-content">
+                <div class="section">
+                    <h2>🔄 Comparação de Jogadoras</h2>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Jogadora</th>
+                                <th>Remates</th>
+                                <th>Enquadrados</th>
+                                <th>Recuperações</th>
+                                <th>Assistências</th>
+                                <th>Total</th>
+                                <th>Eficiência</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody"></tbody>
+                    </table>
+
+                    <h3 style="margin-top: 30px;">Estatísticas Avançadas</h3>
+                    <div id="advancedStats"></div>
+                </div>
+            </div>
+
+            <!-- TAB: HISTÓRICO -->
+            <div id="historico" class="tab-content">
+                <div class="section">
+                    <h2>📋 Gestão de Jogos</h2>
+                    <div class="button-group" style="margin-bottom: 10px;">
+                        <button class="btn btn-primary" onclick="createNewGame()">➕ Novo Jogo</button>
+                        <button class="btn btn-success" onclick="createGameFolder()">📁 Nova Pasta</button>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <select id="folderFilter" onchange="filterGameFolder()" style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;">
+                            <option value="all">📁 Todos os jogos</option>
+                        </select>
+                    </div>
+                    <div id="folderSummary" style="margin-bottom: 15px;"></div>
+                    <button class="btn btn-info" onclick="exportAllGames()" style="width: 100%; margin-bottom: 15px;">💾 Exportar Todos os Jogos</button>
+                    <div class="game-history" id="gameHistoryList"></div>
+                </div>
+            </div>
+
+            <!-- TAB: NOTAS -->
+            <div id="notas" class="tab-content">
+                <div class="section">
+                    <h2>📝 Notas do Jogo</h2>
+                    <p style="color: #666; margin-bottom: 10px;">Observações e análise qualitativa:</p>
+                    <textarea id="gameNotes" placeholder="Escreve aqui as tuas observações sobre o jogo..." style="width: 100%; height: 300px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;"></textarea>
+                    <button class="btn btn-success" onclick="saveNotes()" style="width: 100%; margin-top: 15px;">💾 Guardar Notas</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 0 20px 20px 20px; text-align: center;">
+            <button class="btn btn-info" onclick="exportPDF()" style="width: 100%; padding: 15px; font-size: 1.1em; margin-right: 10px;">📄 Exportar PDF Completo</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        const STORAGE_KEY = 'soccerStatTrackerPro';
+        const GAMES_KEY = 'soccerGameHistory';
+        const FOLDERS_KEY = 'soccerGameFolders';
+        const ROSTER_KEY = 'soccerTeamRoster';
+        const SEASONS_KEY = 'soccerSeasons';
+        let teamRoster = [];
+        let seasons = [];
+        let gameFolders = [];
+        let selectedFolderId = 'all';
+
+        const ACTIONS = [
+            { name: 'Remate', icon: '🎯', type: 'shot' },
+            { name: 'Remate Enquadrado', icon: '🔥', type: 'onTarget' },
+            { name: 'Recuperação', icon: '🛡️', type: 'recovery' },
+            { name: 'Assistência', icon: '🤝', type: 'assist' }
+        ];
+
+        let gameState = {
+            id: null,
+            gameName: '',
+            gameResult: '',
+            players: [],
+            selectedPlayerIds: [],
+            actions: [],
+            customActions: [],
+            gameStarted: false,
+            gameEnded: false,
+            gameTime: 0,
+            period: 'parado',
+            selectedAction: null,
+            startTime: 0,
+            gameDate: new Date().toISOString(),
+            notes: '',
+            folderId: null,
+            seasonId: null,
+            competition: '',
+            starterIds: [],
+            substitutions: []
+        };
+
+        let charts = {};
+
+        // ===== GESTÃO DE DADOS =====
+        function loadData() {
+            gameFolders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
+            seasons = JSON.parse(localStorage.getItem(SEASONS_KEY) || '[]');
+            teamRoster = JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]');
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    gameState = normalizeGameState(JSON.parse(saved));
+                } catch (err) {
+                    console.error('Estado guardado inválido:', err);
+                    gameState = null;
+                }
+            }
+            if (!gameState) {
+                gameState = {
+                    id: 'game_' + Date.now(), gameName: '', gameResult: '', players: [],
+                    selectedPlayerIds: [], actions: [], customActions: [], gameStarted: false,
+                    gameEnded: false, gameTime: 0, period: 'parado', selectedAction: null,
+                    startTime: 0, gameDate: new Date().toISOString(), notes: '', folderId: null,
+                    seasonId: seasons.length ? seasons[seasons.length - 1].id : null,
+                    competition: '', starterIds: [], substitutions: []
+                };
+            } else {
+                // Mantém exatamente o jogo atual guardado.
+                // Nunca gerar um novo ID aqui: o ID é a ligação entre o estado atual e o histórico.
+                if (!gameState.seasonId && seasons.length) {
+                    gameState.seasonId = seasons[seasons.length - 1].id;
+                }
+            }
+            // Migração automática: as jogadoras que já existiam passam a fazer parte do Plantel.
+            (gameState.players || []).forEach(p => {
+                if (!teamRoster.some(r => r.name === p.name)) {
+                    teamRoster.push({ id: 'player_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), name: p.name, number: '', position: '' });
+                }
+            });
+            localStorage.setItem(ROSTER_KEY, JSON.stringify(teamRoster));
+            if (!gameState.selectedPlayerIds.length && gameState.players.length) {
+                gameState.selectedPlayerIds = gameState.players.map(p => { const r=teamRoster.find(x=>x.name===p.name); return r ? r.id : null; }).filter(Boolean);
+            }
+            syncGamePlayersFromRoster();
+            document.getElementById('gameNotes').value = gameState.notes || '';
+            document.getElementById('gameName').value = gameState.gameName || '';
+            document.getElementById('gameResult').value = gameState.gameResult || '';
+            const competitionEl=document.getElementById('gameCompetition'); if(competitionEl) competitionEl.value=gameState.competition||'';
+            updateGameDate();
+        }
+
+        function saveGameInfo() {
+            gameState.gameName = document.getElementById('gameName').value;
+            gameState.gameResult = document.getElementById('gameResult').value;
+            gameState.competition = document.getElementById('gameCompetition')?.value || '';
+            saveData();
+            updateGameHeader();
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        }
+
+        function updateGameDate() {
+            const date = new Date(gameState.gameDate);
+            document.getElementById('gameDate').textContent = date.toLocaleDateString('pt-PT');
+        }
+
+        function updateGameHeader() {
+            const headerInfo = document.getElementById('gameHeaderInfo');
+            let info = '';
+            
+            if (gameState.gameName) {
+                info += `<div>${gameState.gameName}</div>`;
+            }
+            
+            if (gameState.gameResult) {
+                info += `<div style="color: #48bb78;">Resultado: ${gameState.gameResult}</div>`;
+            }
+            
+            headerInfo.innerHTML = info;
+        }
+
+        // ===== TABS =====
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'analise') {
+                setTimeout(() => updateCharts(), 100);
+            }
+        }
+
+        // ===== PLANTEL =====
+        function saveRoster(){ localStorage.setItem(ROSTER_KEY, JSON.stringify(teamRoster)); }
+
+        function addRosterPlayer(){
+            const name=document.getElementById('rosterPlayerName').value.trim();
+            const number=document.getElementById('rosterPlayerNumber').value.trim();
+            const position=document.getElementById('rosterPlayerPosition').value.trim();
+            if(!name){ alert('Introduz o nome da jogadora.'); return; }
+            if(teamRoster.some(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Esta jogadora já existe no plantel.'); return; }
+            teamRoster.push({id:'player_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name,number,position,birthDate:'',foot:'',photo:'',status:'Disponível',notes:''});
+            saveRoster();
+            document.getElementById('rosterPlayerName').value=''; document.getElementById('rosterPlayerNumber').value=''; document.getElementById('rosterPlayerPosition').value='';
+            renderRoster(); renderGameSquadSelector();
+        }
+
+        function removeRosterPlayer(id){
+            const p=teamRoster.find(x=>x.id===id);
+            if(!p || !confirm(`Remover ${p.name} do plantel?`)) return;
+            teamRoster=teamRoster.filter(x=>x.id!==id);
+            saveRoster();
+            gameState.selectedPlayerIds=(gameState.selectedPlayerIds||[]).filter(x=>x!==id);
+            syncGamePlayersFromRoster(); saveData(); renderRoster(); renderGameSquadSelector();
+        }
+
+        function toggleGamePlayer(id){
+            if(!Array.isArray(gameState.selectedPlayerIds)) gameState.selectedPlayerIds=[];
+            if(gameState.selectedPlayerIds.includes(id)) { gameState.selectedPlayerIds=gameState.selectedPlayerIds.filter(x=>x!==id); gameState.starterIds=(gameState.starterIds||[]).filter(x=>x!==id); }
+            else gameState.selectedPlayerIds.push(id);
+            syncGamePlayersFromRoster(); saveData(); renderRoster(); renderGameSquadSelector(); updatePlayerSelectors();
+        }
+
+        function syncGamePlayersFromRoster(){
+            const selected=new Set(gameState.selectedPlayerIds||[]);
+            gameState.players=teamRoster.filter(p=>selected.has(p.id)).map(p=>({name:p.name, rosterId:p.id, number:p.number||'', position:p.position||''}));
+        }
+
+        function renderRoster(){
+            const el=document.getElementById('rosterList'); if(!el) return;
+            const search=(document.getElementById('rosterSearch')?.value||'').trim().toLowerCase();
+            const position=(document.getElementById('rosterPositionFilter')?.value||'').trim().toLowerCase();
+            const selected=new Set(gameState.selectedPlayerIds||[]);
+            const positions=[...new Set(teamRoster.map(p=>p.position).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt'));
+            const filterEl=document.getElementById('rosterPositionFilter');
+            if(filterEl){ const current=filterEl.value; filterEl.innerHTML='<option value="">Todas as posições</option>'+positions.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join(''); filterEl.value=positions.some(x=>x.toLowerCase()===position)?current:''; }
+            if(!teamRoster.length){ el.innerHTML='<div class="roster-empty">Ainda não tens jogadoras no plantel.<br>Adiciona a primeira acima.</div>'; return; }
+            const filtered=teamRoster.filter(p=>(!search || p.name.toLowerCase().includes(search)) && (!position || (p.position||'').toLowerCase()===position));
+            if(!filtered.length){el.innerHTML='<div class="roster-empty">Nenhuma jogadora encontrada com estes filtros.</div>';return;}
+            el.innerHTML=filtered.map(p=>`<div class="roster-card ${selected.has(p.id)?'selected':''}">
+                <div class="roster-info"><div class="roster-number">${escapeHtml(p.number||'–')}</div><div><div class="roster-name">${escapeHtml(p.name)}</div><div class="roster-position">${escapeHtml(p.position||'Posição não definida')}</div></div></div>
+                <div class="roster-actions"><button class="btn ${selected.has(p.id)?'btn-success':'btn-info'}" onclick="toggleGamePlayer('${p.id}')">${selected.has(p.id)?'✓ Convocada':'Convocar'}</button><button class="btn btn-primary" onclick="showAthleteProfile('${p.id}')">👤</button><button class="btn btn-warning" onclick="editRosterPlayer('${p.id}')">✏️</button><button class="btn btn-danger" onclick="removeRosterPlayer('${p.id}')">✕</button></div>
+            </div>`).join('');
+        }
+
+        function showAthleteProfile(id){
+            const p=teamRoster.find(x=>x.id===id); if(!p)return;
+            const panel=document.getElementById('athleteProfilePanel'); if(!panel)return;
+            const seasonId=gameState.seasonId; const history=JSON.parse(localStorage.getItem(GAMES_KEY)||'[]').filter(g=>!seasonId||g.seasonId===seasonId);
+            let games=0,actions=0,goals=0,assists=0,shots=0,onTarget=0,recoveries=0;
+            history.forEach(g=>{ const involved=(g.selectedPlayerIds||[]).includes(id)||(g.players||[]).some(x=>x.rosterId===id); if(involved)games++; (g.actions||[]).forEach(a=>{if(a.rosterId===id){actions++; if(a.action==='Golo')goals++; if(a.action==='Assistência')assists++; if(a.action==='Remate')shots++; if(a.action==='Remate Enquadrado')onTarget++; if(a.action==='Recuperação')recoveries++;}});});
+            const initials=p.name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+            const recent=history.filter(g=>(g.actions||[]).some(a=>a.rosterId===id)).slice(-8).reverse().map(g=>{const acts=(g.actions||[]).filter(a=>a.rosterId===id);const goalsG=acts.filter(a=>a.action==='Golo').length;return `<tr><td>${escapeHtml(g.gameName||'Jogo')}</td><td>${g.gameResult?escapeHtml(g.gameResult):'-'}</td><td>${acts.length}</td><td>${goalsG}</td></tr>`;}).join('');
+            panel.style.display='block'; panel.innerHTML=`<div class="athlete-profile-head"><div class="athlete-avatar">${p.photo?`<img src="${escapeHtml(p.photo)}">`:escapeHtml(initials)}</div><div style="flex:1"><h3>${escapeHtml(p.name)}</h3><div style="color:#718096">${escapeHtml(p.position||'Posição não definida')} · Nº ${escapeHtml(p.number||'–')} · ${escapeHtml(p.status||'Disponível')}</div><div style="font-size:.85rem;color:#718096;margin-top:4px">${p.foot?`Pé: ${escapeHtml(p.foot)} · `:''}${p.birthDate?`Nascimento: ${escapeHtml(p.birthDate)}`:''}</div></div><button class="btn btn-info" onclick="exportAthleteReport('${p.id}')">📄 PDF</button><button class="btn btn-danger" onclick="document.getElementById('athleteProfilePanel').style.display='none'">Fechar</button></div><div class="profile-grid"><div class="profile-stat"><div class="label">Jogos</div><div class="value">${games}</div></div><div class="profile-stat"><div class="label">Ações</div><div class="value">${actions}</div></div><div class="profile-stat"><div class="label">Golos</div><div class="value">${goals}</div></div><div class="profile-stat"><div class="label">Assistências</div><div class="value">${assists}</div></div><div class="profile-stat"><div class="label">Remates</div><div class="value">${shots}</div></div><div class="profile-stat"><div class="label">Enquadrados</div><div class="value">${onTarget}</div></div><div class="profile-stat"><div class="label">Recuperações</div><div class="value">${recoveries}</div></div></div><div style="margin-top:18px"><h4>📈 Últimos jogos</h4><div style="overflow-x:auto;margin-top:8px"><table class="comparison-table"><thead><tr><th>Jogo</th><th>Resultado</th><th>Ações</th><th>Golos</th></tr></thead><tbody>${recent||'<tr><td colspan="4" style="text-align:center;color:#999">Ainda não existem jogos com ações desta atleta.</td></tr>'}</tbody></table></div></div><div style="margin-top:15px;color:#555"><strong>Notas:</strong> ${escapeHtml(p.notes||'Sem notas.')}</div>`;
+            panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+        }
+
+        function exportAthleteReport(id){
+            const p=teamRoster.find(x=>x.id===id); if(!p)return;
+            const seasonId=gameState.seasonId; const history=JSON.parse(localStorage.getItem(GAMES_KEY)||'[]').filter(g=>!seasonId||g.seasonId===seasonId);
+            const acts=history.flatMap(g=>(g.actions||[]).filter(a=>a.rosterId===id));
+            const stats={games:0,goals:0,assists:0,shots:0,onTarget:0,recoveries:0,actions:acts.length}; history.forEach(g=>{if((g.selectedPlayerIds||[]).includes(id)||(g.players||[]).some(x=>x.rosterId===id))stats.games++;}); acts.forEach(a=>{if(a.action==='Golo')stats.goals++;if(a.action==='Assistência')stats.assists++;if(a.action==='Remate')stats.shots++;if(a.action==='Remate Enquadrado')stats.onTarget++;if(a.action==='Recuperação')stats.recoveries++;});
+            const {jsPDF}=window.jspdf; const pdf=new jsPDF(); pdf.setFillColor(0,160,65);pdf.rect(0,0,210,24,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(18);pdf.setFont('helvetica','bold');pdf.text('FICHA DA ATLETA',14,15);pdf.setTextColor(35,35,35);pdf.setFontSize(16);pdf.text(p.name,14,40);pdf.setFontSize(10);pdf.setFont('helvetica','normal');pdf.text(`${p.position||'Posição não definida'} · Nº ${p.number||'–'} · Época ${getSeasonName(seasonId)}`,14,48); let y=65; const lines=[['Jogos',stats.games],['Ações',stats.actions],['Golos',stats.goals],['Assistências',stats.assists],['Remates',stats.shots],['Remates enquadrados',stats.onTarget],['Recuperações',stats.recoveries]]; lines.forEach((r,i)=>{const x=14+(i%2)*92;const yy=y+Math.floor(i/2)*18;pdf.setFillColor(240,255,244);pdf.roundedRect(x,yy-8,82,13,2,2,'F');pdf.setTextColor(90,90,90);pdf.text(r[0],x+4,yy-1);pdf.setTextColor(0,140,55);pdf.setFont('helvetica','bold');pdf.text(String(r[1]),x+70,yy-1,{align:'right'});pdf.setFont('helvetica','normal');}); y+=Math.ceil(lines.length/2)*18+15; pdf.setTextColor(70,70,70);pdf.setFontSize(10);pdf.text('Notas:',14,y); y+=7; const note=pdf.splitTextToSize(p.notes||'Sem notas.',180);pdf.text(note,14,y);pdf.save(`ficha_${pdfSafeFileName(p.name)}.pdf`);
+        }
+
+        function editRosterPlayer(id){
+            const p=teamRoster.find(x=>x.id===id); if(!p) return;
+            const name=prompt('Nome da jogadora:',p.name); if(name===null || !name.trim()) return;
+            const number=prompt('Número:',p.number||''); if(number===null) return;
+            const position=prompt('Posição:',p.position||''); if(position===null) return;
+            const birthDate=prompt('Data de nascimento (opcional):',p.birthDate||''); if(birthDate===null) return;
+            const foot=prompt('Pé dominante (Direito/Esquerdo/Ambos):',p.foot||''); if(foot===null) return;
+            const status=prompt('Estado (Disponível/Lesionada/Indisponível):',p.status||'Disponível'); if(status===null) return;
+            const notes=prompt('Notas da atleta:',p.notes||''); if(notes===null) return;
+            if(teamRoster.some(x=>x.id!==id && x.name.toLowerCase()===name.trim().toLowerCase())){alert('Já existe outra jogadora com esse nome.');return;}
+            p.name=name.trim(); p.number=number.trim(); p.position=position.trim(); p.birthDate=birthDate.trim(); p.foot=foot.trim(); p.status=status.trim()||'Disponível'; p.notes=notes.trim();
+            saveRoster(); syncGamePlayersFromRoster(); saveData(); renderRoster(); renderGameSquadSelector(); updatePlayerSelectors();
+        }
+
+        function renderGameSquadSelector(){
+            const el=document.getElementById('gameSquadSelector'); if(!el) return;
+            if(!teamRoster.length){ el.innerHTML='<div class="roster-empty">O plantel está vazio. Vai à aba 👥 Plantel para criar as jogadoras.</div>'; document.getElementById('gameSquadSummary').textContent='0 convocadas'; renderSubstitutionControls(); return; }
+            const selected=new Set(gameState.selectedPlayerIds||[]);
+            if(!Array.isArray(gameState.starterIds)) gameState.starterIds=[];
+            el.innerHTML=teamRoster.map(p=>{ const isSel=selected.has(p.id); const isStarter=gameState.starterIds.includes(p.id); return `<div class="roster-card ${isSel?'selected':''}"><div class="roster-info"><div class="roster-number">${escapeHtml(p.number||'–')}</div><div><div class="roster-name">${escapeHtml(p.name)}</div><div class="roster-position">${escapeHtml(p.position||'Posição não definida')}</div></div></div><div class="roster-actions"><button class="btn ${isSel?'btn-success':'btn-info'}" onclick="toggleGamePlayer('${p.id}')">${isSel?'✓ Convocada':'Convocar'}</button>${isSel?`<button class="btn ${isStarter?'btn-warning':'btn-info'}" onclick="toggleStarter('${p.id}')">${isStarter?'⭐ Titular':'Suplente'}</button>`:''}</div></div>`;}).join('');
+            document.getElementById('gameSquadSummary').textContent=`${selected.size} convocada(s) · ${gameState.starterIds.filter(id=>selected.has(id)).length} titular(es)`;
+            renderSubstitutionControls();
+        }
+
+        function toggleStarter(id){
+            if(!gameState.selectedPlayerIds.includes(id)) return;
+            if(!Array.isArray(gameState.starterIds)) gameState.starterIds=[];
+            if(gameState.starterIds.includes(id)) gameState.starterIds=gameState.starterIds.filter(x=>x!==id); else gameState.starterIds.push(id);
+            saveData(); renderGameSquadSelector(); renderRoster();
+        }
+
+        function renderSubstitutionControls(){
+            const out=document.getElementById('subOut'), inn=document.getElementById('subIn'), list=document.getElementById('substitutionList');
+            if(!out||!inn) return;
+            const selected=new Set(gameState.selectedPlayerIds||[]);
+            const names=teamRoster.filter(p=>selected.has(p.id));
+            out.innerHTML=names.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+            inn.innerHTML=names.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+            if(list) list.innerHTML=(gameState.substitutions||[]).length ? gameState.substitutions.map((s,i)=>`<div class="substitution-item"><span>🔄 <strong>${escapeHtml(s.outName)}</strong> → ${escapeHtml(s.inName)}</span><span>${Number(s.minute||0)}' <button class="btn btn-danger btn-small" onclick="removeSubstitution(${i})">✕</button></span></div>`).join('') : '<div style="color:#999;font-size:.85rem;">Ainda não existem substituições registadas.</div>';
+        }
+
+        function addSubstitution(){
+            const out=document.getElementById('subOut')?.value, inn=document.getElementById('subIn')?.value;
+            if(!out||!inn||out===inn){alert('Seleciona uma jogadora para sair e outra para entrar.');return;}
+            if(gameState.period==='parado' || gameState.period==='intervalo'){alert('A substituição deve ser registada durante uma parte em jogo.');return;}
+            const outP=teamRoster.find(p=>p.id===out), inP=teamRoster.find(p=>p.id===inn);
+            if(!outP||!inP)return;
+            const elapsedSeconds=Math.max(0, Number(gameState.gameTime||0));
+            const minute=Math.floor(elapsedSeconds/60);
+            const alreadyOut=gameState.substitutions.some(s=>s.outId===out);
+            const alreadyIn=gameState.substitutions.some(s=>s.inId===inn);
+            if(alreadyOut){alert(`${outP.name} já saiu neste jogo.`);return;}
+            if(alreadyIn){alert(`${inP.name} já entrou neste jogo.`);return;}
+            gameState.substitutions.push({outId:out,inId:inn,outName:outP.name,inName:inP.name,minute,gameTimeSeconds:elapsedSeconds});
+            saveData(); renderSubstitutionControls(); renderLiveStats?.();
+        }
+        function removeSubstitution(i){ gameState.substitutions.splice(i,1); saveData(); renderSubstitutionControls(); }
+
+
+        // ===== JOGADORAS =====
+        function addPlayer() {
+            const input=document.getElementById('playerInput'); const name=input.value.trim();
+            if(!name){ alert('Por favor, introduz o nome da jogadora'); return; }
+            if(teamRoster.some(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Esta jogadora já existe no plantel.'); return; }
+            teamRoster.push({id:'player_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name,number:'',position:''}); saveRoster();
+            const added=teamRoster[teamRoster.length-1]; gameState.selectedPlayerIds=[...(gameState.selectedPlayerIds||[]),added.id]; syncGamePlayersFromRoster(); saveData();
+            input.value=''; renderRoster(); renderGameSquadSelector(); renderPlayers(); updatePlayerSelectors();
+        }
+
+        function removePlayer(name) {
+            const p=teamRoster.find(x=>x.name===name);
+            if(p) removeRosterPlayer(p.id);
+        }
+
+        function renderPlayers() {
+            // Compatibilidade com a estrutura atual: a área de jogadoras para registo
+            // de ações chama-se playerSelectArea. O antigo playerList já não existe no HTML.
+            const playerList = document.getElementById('playerSelectArea') || document.getElementById('playerList');
+            if (!playerList) return;
+            const players = Array.isArray(gameState.players) ? gameState.players : [];
+            playerList.innerHTML = players.map(p => `
+                <button type="button" class="player-btn" onclick="registerAction('${String(p.id || '').replace(/'/g, "\\'")}')">
+                    ${escapeHtml(p.name || '')}
+                </button>
+            `).join('');
+        }
+
+        // ===== AÇÕES =====
+        function renderActions() {
+            const grid = document.getElementById('actionsGrid');
+            if (!grid) return;
+            // As ações base são sempre reconstruídas a partir desta lista.
+            // Isto garante que a zona de registo nunca desaparece ao atualizar convocatórias/substituições.
+            let allActions = Array.isArray(ACTIONS) ? [...ACTIONS] : [];
+            if (Array.isArray(gameState.customActions) && gameState.customActions.length > 0) {
+                allActions = allActions.concat(gameState.customActions);
+            }
+            grid.innerHTML = allActions.map(action => `
+                <button type="button" class="action-btn ${gameState.selectedAction === action.name ? 'active' : ''}" onclick="selectAction('${String(action.name).replace(/'/g, "\\'") }', this)">
+                    ${action.icon || '⚡'}<br>${escapeHtml(action.name)}
+                </button>
+            `).join('');
+        }
+
+        function addCustomAction() {
+            const nameInput = document.getElementById('customActionName');
+            const emojiInput = document.getElementById('customActionEmoji');
+            const name = nameInput.value.trim();
+            const emoji = emojiInput.value.trim() || '✨';
+
+            if (!name) {
+                alert('Por favor, introduz o nome da ação');
+                return;
+            }
+
+            // Verificar se já existe
+            if (ACTIONS.some(a => a.name === name) || 
+                gameState.customActions.some(a => a.name === name)) {
+                alert('Esta ação já existe');
+                return;
+            }
+
+            gameState.customActions.push({
+                name,
+                icon: emoji,
+                type: 'custom'
+            });
+
+            nameInput.value = '';
+            emojiInput.value = '';
+            saveData();
+            renderActions();
+            renderCustomActionsList();
+            alert('✅ Ação customizada adicionada!');
+        }
+
+        function renderCustomActionsList() {
+            const container = document.getElementById('customActionsList');
+            
+            if (gameState.customActions.length === 0) {
+                container.innerHTML = '<p style="color: #999; font-size: 0.9em;">Nenhuma ação customizada criada ainda</p>';
+                return;
+            }
+
+            const html = gameState.customActions.map(action => `
+                <div style="background: white; border: 2px solid #48bb78; border-radius: 20px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-weight: 600; color: #48bb78;">
+                    ${action.icon} ${action.name}
+                    <button onclick="deleteCustomAction('${action.name}')" style="background: none; border: none; color: #f56565; font-size: 1.2em; cursor: pointer; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">✕</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function deleteCustomAction(name) {
+            if (confirm(`Tens a certeza que queres deletar a ação "${name}"?`)) {
+                gameState.customActions = gameState.customActions.filter(a => a.name !== name);
+                gameState.actions = gameState.actions.filter(a => a.action !== name);
+                saveData();
+                renderActions();
+                renderCustomActionsList();
+                updateLiveStats();
+                updateRecentActions();
+                alert('✅ Ação customizada removida!');
+            }
+        }
+
+        function selectAction(actionName, button) {
+            gameState.selectedAction = actionName;
+            saveData();
+            document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
+            if (button) button.classList.add('active');
+            updatePlayerSelectors();
+        }
+
+        function updatePlayerSelectors() {
+            const area = document.getElementById('playerSelectArea');
+
+            if (!gameState.selectedAction) {
+                area.innerHTML = '<p style="color: #999; text-align: center;">Seleciona uma ação primeiro</p>';
+                return;
+            }
+
+            if (gameState.players.length === 0) {
+                area.innerHTML = '<p style="color: #999; text-align: center;">Adiciona jogadoras primeiro</p>';
+                return;
+            }
+
+            const buttons = gameState.players.map(p => `
+                <button class="player-btn" onclick="recordAction('${p.name}')">${p.name}</button>
+            `).join('');
+            area.innerHTML = buttons;
+        }
+
+        function recordAction(playerName) {
+            if (!gameState.gameStarted) {
+                alert('O jogo ainda não começou!');
+                return;
+            }
+
+            gameState.actions.push({
+                player: playerName,
+                rosterId: gameState.players.find(p=>p.name===playerName)?.rosterId || teamRoster.find(p=>p.name===playerName)?.id || null,
+                action: gameState.selectedAction,
+                time: gameState.gameTime,
+                period: gameState.period,
+                timestamp: new Date().toISOString()
+            });
+
+            saveData();
+            updateLiveStats();
+            updateRecentActions();
+
+            const area = document.getElementById('playerSelectArea');
+            area.style.background = '#d4edda';
+            setTimeout(() => {
+                area.style.background = '';
+            }, 300);
+        }
+
+        function deleteAction(index) {
+            const action = gameState.actions[index];
+            if (confirm(`Deletar: ${action.player} - ${action.action} (${formatTime(action.time)})?`)) {
+                gameState.actions.splice(index, 1);
+                saveData();
+                updateLiveStats();
+                updateRecentActions();
+                updateCharts();
+                updateComparison();
+                alert('✅ Ação removida!');
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateRecentActions() {
+            const container = document.getElementById('recentActionsDisplay');
+            const recent = gameState.actions.slice(-15).reverse();
+
+            if (recent.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">Sem ações registadas ainda</p>';
+                return;
+            }
+
+            const html = recent.map((action, displayIndex) => {
+                const actualIndex = gameState.actions.length - 1 - displayIndex;
+                return `
+                    <div style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 3px solid #00A041; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; color: #333;">${action.player}</div>
+                            <div style="font-size: 0.85em; color: #666;">${action.action} • ${formatTime(action.time)}</div>
+                        </div>
+                        <button class="btn btn-danger btn-small" onclick="deleteAction(${actualIndex})">🗑️ Deletar</button>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function updateLiveStats() {
+            const section = document.getElementById('statsLiveSection');
+            section.style.display = 'block';
+
+            const stats = {};
+            gameState.actions.forEach(a => {
+                if (!stats[a.player]) {
+                    stats[a.player] = {};
+                }
+                stats[a.player][a.action] = (stats[a.player][a.action] || 0) + 1;
+            });
+
+            const html = Object.entries(stats).map(([player, actions]) => {
+                const total = Object.values(actions).reduce((a, b) => a + b, 0);
+                return `
+                    <div class="stats-summary">
+                        <h4>${player}</h4>
+                        <div class="stats-grid">
+                            ${Object.entries(actions).map(([action, count]) => `
+                                <div class="stat-item">
+                                    <div class="stat-label">${action}</div>
+                                    <div class="stat-value">${count}</div>
+                                </div>
+                            `).join('')}
+                            <div class="stat-item">
+                                <div class="stat-label">Total</div>
+                                <div class="stat-value">${total}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('liveStats').innerHTML = html;
+        }
+
+        // ===== TEMPORIZADOR =====
+        let timerInterval = null;
+
+        function startGame() {
+            if (gameState.gameEnded) { alert('🏁 Este jogo já foi terminado. Cria um novo jogo para continuar.'); return; }
+            // Reforça a sincronização sem alterar o fluxo de registo de ações.
+            syncGamePlayersFromRoster();
+            if (gameState.players.length === 0) {
+                alert('Seleciona pelo menos uma jogadora convocada antes de começar.');
+                return;
+            }
+
+            gameState.gameStarted = true;
+            gameState.period = 'primeira';
+            gameState.startTime = Date.now() - (Number(gameState.gameTime) || 0) * 1000;
+            renderActions();
+            updatePlayerSelectors();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('halfBtn').style.display = 'block';
+            document.getElementById('resumeBtn').style.display = 'none';
+            const finishBtn = document.getElementById('finishGameBtn'); if (finishBtn) finishBtn.style.display = 'block';
+            const playerInput = document.getElementById('playerInput');
+            if (playerInput) playerInput.disabled = true;
+            const live = document.getElementById('statsLiveSection');
+            if (live) live.style.display = 'block';
+
+            startTimer();
+            updateTimer();
+            saveData();
+        }
+
+        function toggleHalftime() {
+            if (gameState.period === 'primeira') {
+                gameState.period = 'intervalo';
+                clearInterval(timerInterval);
+                document.getElementById('halfBtn').style.display = 'none';
+                document.getElementById('resumeBtn').style.display = 'block';
+            }
+            saveData();
+            updateTimer();
+        }
+
+        function resumeGame() {
+            gameState.period = 'segunda';
+            gameState.startTime = Date.now() - (gameState.gameTime * 1000);
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('halfBtn').style.display = 'block';
+            const finishBtn = document.getElementById('finishGameBtn'); if (finishBtn) finishBtn.style.display = 'block';
+            startTimer();
+            saveData();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            // O cronómetro usa o startTime como referência absoluta, por isso continua
+            // corretamente mesmo depois de trocar de separador ou recarregar a página.
+            if (!gameState.startTime) {
+                gameState.startTime = Date.now() - (Number(gameState.gameTime) || 0) * 1000;
+            }
+            gameState.gameStarted = true;
+            timerInterval = setInterval(() => {
+                if (gameState.period !== 'primeira' && gameState.period !== 'segunda') return;
+                gameState.gameTime = Math.max(0, Math.floor((Date.now() - gameState.startTime) / 1000));
+                updateTimer();
+            }, 250);
+            updateTimer();
+        }
+
+        function updateTimer() {
+            const mins = Math.floor(gameState.gameTime / 60);
+            const secs = gameState.gameTime % 60;
+            const display = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('timerDisplay').textContent = display;
+
+            const periodTexts = {
+                'parado': 'Clica em "Iniciar Jogo"',
+                'primeira': '⏱️ 1ª Parte em Curso',
+                'intervalo': '⏸️ Intervalo',
+                'segunda': '⏱️ 2ª Parte em Curso',
+                'finalizado': '🏁 Jogo Terminado'
+            };
+            document.getElementById('currentPeriod').textContent = periodTexts[gameState.period];
+        }
+
+        function finishGame() {
+            if (!gameState.gameName) {
+                alert('⚠️ Define primeiro o nome/adversário do jogo.');
+                return;
+            }
+            if (!gameState.gameStarted && !['primeira','segunda','intervalo'].includes(gameState.period)) {
+                if (gameState.gameEnded) { alert('🏁 Este jogo já está terminado.'); return; }
+                alert('▶️ Inicia o jogo antes de o terminar.');
+                return;
+            }
+            if (gameState.gameStarted && (gameState.period === 'primeira' || gameState.period === 'segunda')) {
+                gameState.gameTime = Math.max(0, Math.floor((Date.now() - gameState.startTime) / 1000));
+            }
+            clearInterval(timerInterval);
+
+            if (gameFolders.length > 0) {
+                const options = gameFolders.map((f, i) => `${i + 1}. ${f.name}`).join('\n');
+                const currentName = getFolderName(gameState.folderId);
+                const answer = prompt(`📁 Escolhe a pasta onde queres guardar o jogo:\n\n${options}\n\nPasta atual: ${currentName}\n\nEscreve o número da pasta (Cancelar mantém a pasta atual):`);
+                if (answer !== null) {
+                    const idx = parseInt(answer, 10) - 1;
+                    if (idx >= 0 && idx < gameFolders.length) gameState.folderId = gameFolders[idx].id;
+                    else { alert('⚠️ Pasta inválida. O jogo não foi terminado.'); return; }
+                } else if (!gameState.folderId) {
+                    alert('📁 Escolhe uma pasta para terminar o jogo.');
+                    return;
+                }
+            } else {
+                alert('📁 Cria primeiro uma pasta para poderes guardar o jogo.');
+                return;
+            }
+
+            gameState.gameStarted = false;
+            gameState.gameEnded = true;
+            gameState.period = 'finalizado';
+            gameState.endTime = new Date().toISOString();
+            saveData();
+            saveGameToHistory();
+            updateTimer();
+            updateCurrentGameFolderSelector();
+            loadGameHistory();
+            const finishBtn = document.getElementById('finishGameBtn'); if (finishBtn) finishBtn.style.display = 'none';
+            const startBtn = document.getElementById('startBtn'); if (startBtn) startBtn.style.display = 'none';
+            const halfBtn = document.getElementById('halfBtn'); if (halfBtn) halfBtn.style.display = 'none';
+            const resumeBtn = document.getElementById('resumeBtn'); if (resumeBtn) resumeBtn.style.display = 'none';
+            alert(`✅ Jogo terminado e guardado em "${getFolderName(gameState.folderId)}".`);
+        }
+
+        function resetGame() {
+            createNewGame();
+        }
+
+        // ===== GESTÃO DE JOGOS E PASTAS =====
+        function saveFolders() {
+            localStorage.setItem(FOLDERS_KEY, JSON.stringify(gameFolders));
+        }
+
+        function getFolderName(folderId) {
+            if (!folderId) return 'Sem pasta';
+            const folder = gameFolders.find(f => f.id === folderId);
+            return folder ? folder.name : 'Sem pasta';
+        }
+
+        function updateFolderSelector() {
+            const select = document.getElementById('folderFilter');
+            if (!select) return;
+            const current = select.value || selectedFolderId || 'all';
+            select.innerHTML = '<option value="all">📁 Todos os jogos</option><option value="none">🗂️ Sem pasta</option>' +
+                gameFolders.map(f => `<option value="${f.id}">📂 ${escapeHtml(f.name)}</option>`).join('');
+            select.value = gameFolders.some(f => f.id === current) || current === 'none' || current === 'all' ? current : 'all';
+        }
+
+        function updateCurrentGameFolderSelector() {
+            const select = document.getElementById('gameFolderSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">🗂️ Sem pasta</option>' +
+                gameFolders.map(f => `<option value="${f.id}">📂 ${escapeHtml(f.name)}</option>`).join('');
+            select.value = gameState.folderId || '';
+        }
+
+        function createGameFolder() {
+            const name = prompt('Nome da pasta (ex: Sporting Sub-17 | 2026/27):');
+            if (!name || !name.trim()) return;
+            const folder = { id: 'folder_' + Date.now(), name: name.trim(), createdAt: new Date().toISOString() };
+            gameFolders.push(folder);
+            saveFolders();
+            selectedFolderId = folder.id;
+            gameState.folderId = folder.id;
+            saveData();
+            updateFolderSelector();
+            updateCurrentGameFolderSelector();
+            updateSeasonSelectors();
+            renderSeasonStats();
+            document.getElementById('folderFilter').value = folder.id;
+            loadGameHistory();
+            alert(`📁 Pasta "${folder.name}" criada e associada ao jogo atual.`);
+        }
+
+        function changeCurrentGameFolder() {
+            const select = document.getElementById('gameFolderSelect');
+            gameState.folderId = select.value || null;
+            saveData();
+            loadGameHistory();
+        }
+
+        function filterGameFolder() {
+            selectedFolderId = document.getElementById('folderFilter').value;
+            loadGameHistory();
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+        }
+
+        function createNewGame(explicitFolderId) {
+            // Criar um jogo novo nunca depende do estado do jogo anterior.
+            // Se existir um jogo com dados, preserva-o no histórico antes de limpar o estado.
+            const hasCurrentData = !!(gameState && (gameState.gameName || (gameState.actions || []).length || (gameState.players || []).length));
+            if (hasCurrentData) saveGameToHistory();
+            clearInterval(timerInterval);
+            const folderId = arguments.length > 0 ? (explicitFolderId || null) : (selectedFolderId && selectedFolderId !== 'all' && selectedFolderId !== 'none' ? selectedFolderId : null);
+            gameState = {
+                id: 'game_' + Date.now(), gameName: '', gameResult: '',
+                players: [], selectedPlayerIds: [], actions: [],
+                customActions: [...(gameState.customActions || [])], gameStarted: false, gameEnded: false,
+                gameTime: 0, period: 'parado', selectedAction: null, startTime: 0,
+                gameDate: new Date().toISOString(), notes: '', folderId: folderId, seasonId: gameState.seasonId || (seasons.length ? seasons[seasons.length-1].id : null), competition: '', starterIds: [], substitutions: []
+            };
+            saveData();
+            updateCurrentGameFolderSelector();
+            updateSeasonSelectors();
+            renderSeasonStats();
+            document.getElementById('gameName').value = '';
+            document.getElementById('gameResult').value = '';
+            const competitionEl=document.getElementById('gameCompetition'); if(competitionEl) competitionEl.value='';
+            document.getElementById('gameNotes').value = '';
+            renderPlayers(); renderActions(); renderCustomActionsList(); updatePlayerSelectors();
+            updateTimer(); updateRecentActions(); updateLiveStats(); updateGameHeader();
+            document.getElementById('statsLiveSection').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('halfBtn').style.display = 'none';
+            document.getElementById('resumeBtn').style.display = 'none';
+            document.getElementById('playerInput').disabled = false;
+            loadGameHistory();
+        }
+
+        // ===== GRÁFICOS =====
+        function updateCharts() {
+            updateActionsChart();
+            updatePlayersChart();
+            updatePeriodChart();
+            updateTopActions();
+        }
+
+        function updateActionsChart() {
+            const ctx = document.getElementById('actionsChart').getContext('2d');
+            const actionCounts = {};
+            
+            gameState.actions.forEach(a => {
+                actionCounts[a.action] = (actionCounts[a.action] || 0) + 1;
+            });
+
+            if (charts.actions) charts.actions.destroy();
+            charts.actions = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(actionCounts),
+                    datasets: [{
+                        data: Object.values(actionCounts),
+                        backgroundColor: [
+                            '#00A041', '#48bb78', '#ed8936', '#f56565'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePlayersChart() {
+            const ctx = document.getElementById('playersChart').getContext('2d');
+            const stats = {};
+            
+            gameState.actions.forEach(a => {
+                if (!stats[a.player]) stats[a.player] = 0;
+                stats[a.player]++;
+            });
+
+            if (charts.players) charts.players.destroy();
+            charts.players = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(stats),
+                    datasets: [{
+                        label: 'Total de Ações',
+                        data: Object.values(stats),
+                        backgroundColor: '#00A041'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePeriodChart() {
+            const ctx = document.getElementById('periodChart').getContext('2d');
+            const periodData = { primeira: 0, intervalo: 0, segunda: 0 };
+            
+            gameState.actions.forEach(a => {
+                if (periodData.hasOwnProperty(a.period)) {
+                    periodData[a.period]++;
+                }
+            });
+
+            if (charts.period) charts.period.destroy();
+            charts.period = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1ª Parte', 'Intervalo', '2ª Parte'],
+                    datasets: [{
+                        label: 'Ações',
+                        data: [periodData.primeira, periodData.intervalo, periodData.segunda],
+                        borderColor: '#00A041',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateTopActions() {
+            const actionCounts = {};
+            gameState.actions.forEach(a => {
+                actionCounts[a.action] = (actionCounts[a.action] || 0) + 1;
+            });
+
+            const total = gameState.actions.length;
+            const sorted = Object.entries(actionCounts)
+                .sort((a, b) => b[1] - a[1]);
+
+            const html = sorted.map(([action, count]) => `
+                <tr>
+                    <td>${action}</td>
+                    <td><strong>${count}</strong></td>
+                    <td>${((count / total) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('topActionsBody').innerHTML = html;
+        }
+
+        // ===== COMPARAÇÃO =====
+        function updateComparison() {
+            const stats = {};
+            
+            gameState.actions.forEach(a => {
+                if (!stats[a.player]) {
+                    stats[a.player] = {
+                        'Remate': 0,
+                        'Remate Enquadrado': 0,
+                        'Recuperação': 0,
+                        'Assistência': 0,
+                        total: 0
+                    };
+                }
+                stats[a.player][a.action] = (stats[a.player][a.action] || 0) + 1;
+                stats[a.player].total++;
+            });
+
+            const html = Object.entries(stats).map(([player, playerStats]) => {
+                const efficiency = playerStats.total > 0 ? 
+                    ((playerStats['Remate Enquadrado'] + playerStats['Assistência']) / playerStats.total * 100).toFixed(1) : 0;
+                
+                let efficiencyClass = 'efficiency-low';
+                if (efficiency >= 50) efficiencyClass = 'efficiency-high';
+                else if (efficiency >= 25) efficiencyClass = 'efficiency-medium';
+
+                return `
+                    <tr>
+                        <td><strong>${player}</strong></td>
+                        <td>${playerStats['Remate'] || 0}</td>
+                        <td>${playerStats['Remate Enquadrado'] || 0}</td>
+                        <td>${playerStats['Recuperação'] || 0}</td>
+                        <td>${playerStats['Assistência'] || 0}</td>
+                        <td><strong>${playerStats.total}</strong></td>
+                        <td><span class="efficiency-badge ${efficiencyClass}">${efficiency}%</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('comparisonTableBody').innerHTML = html;
+
+            // Estatísticas avançadas
+            const advancedHtml = Object.entries(stats).map(([player, playerStats]) => {
+                const avgActionsPerMinute = (playerStats.total / Math.max(gameState.gameTime / 60, 1)).toFixed(2);
+                return `
+                    <div class="stats-summary">
+                        <h4>${player}</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Ações/Minuto</div>
+                                <div class="stat-value">${avgActionsPerMinute}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Efetividade Ofensiva</div>
+                                <div class="stat-value">${(playerStats['Remate Enquadrado'] + playerStats['Assistência'])}/${playerStats.total}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Taxa de Recuperação</div>
+                                <div class="stat-value">${playerStats['Recuperação']}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('advancedStats').innerHTML = advancedHtml;
+        }
+
+        // ===== ÉPOCAS =====
+        function saveSeasons(){ localStorage.setItem(SEASONS_KEY, JSON.stringify(seasons)); }
+        function getSeasonName(id){ const s=seasons.find(x=>x.id===id); return s ? s.name : 'Sem época'; }
+        function createSeason(){
+            const name=prompt('Nome da época (ex: 2026/27):');
+            if(!name || !name.trim()) return;
+            const season={id:'season_'+Date.now(),name:name.trim(),createdAt:new Date().toISOString()};
+            seasons.push(season); saveSeasons();
+            gameState.seasonId=season.id; saveData();
+            updateSeasonSelectors(); renderSeasonStats(); updateGameHeader();
+        }
+        function updateSeasonSelectors(){
+            const html='<option value="">📅 Sem época</option>'+seasons.map(s=>`<option value="${s.id}">📅 ${escapeHtml(s.name)}</option>`).join('');
+            const gameSel=document.getElementById('gameSeasonSelect'); if(gameSel){gameSel.innerHTML=html; gameSel.value=gameState.seasonId||'';}
+            const statsSel=document.getElementById('seasonStatsSelect'); if(statsSel){statsSel.innerHTML=seasons.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('') || '<option value="">Sem épocas criadas</option>'; if(gameState.seasonId) statsSel.value=gameState.seasonId;}
+        }
+        function changeCurrentGameSeason(){ const sel=document.getElementById('gameSeasonSelect'); gameState.seasonId=sel.value||null; saveData(); updateGameHeader(); renderSeasonStats(); }
+        function renderSeasonStats(){
+            const sel=document.getElementById('seasonStatsSelect'); const seasonId=sel?.value || gameState.seasonId;
+            const body=document.getElementById('seasonStatsBody'), summary=document.getElementById('seasonSummary'), dash=document.getElementById('seasonDashboard'); if(!body) return;
+            if(!seasonId){body.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;">Cria ou seleciona uma época.</td></tr>'; if(summary)summary.innerHTML=''; if(dash)dash.innerHTML=''; return;}
+            const history=JSON.parse(localStorage.getItem(GAMES_KEY)||'[]').filter(g=>g.seasonId===seasonId);
+            const stats={}; teamRoster.forEach(p=>stats[p.id]={name:p.name,games:0,starts:0,minutes:0,actions:0,goals:0,assists:0,shots:0,onTarget:0,recoveries:0});
+            history.forEach(g=>{
+                (g.players||[]).forEach(p=>{const id=p.rosterId||teamRoster.find(r=>r.name===p.name)?.id;if(!id)return;if(!stats[id])stats[id]={name:p.name,games:0,starts:0,minutes:0,actions:0,goals:0,assists:0,shots:0,onTarget:0,recoveries:0}; stats[id].games++; if((g.starterIds||[]).includes(id))stats[id].starts++;});
+                (g.actions||[]).forEach(a=>{const id=a.rosterId||teamRoster.find(r=>r.name===a.player)?.id;if(!id)return;if(!stats[id])stats[id]={name:a.player,games:0,starts:0,minutes:0,actions:0,goals:0,assists:0,shots:0,onTarget:0,recoveries:0};stats[id].actions++;if(a.action==='Golo')stats[id].goals++;if(a.action==='Assistência')stats[id].assists++;if(a.action==='Remate')stats[id].shots++;if(a.action==='Remate Enquadrado')stats[id].onTarget++;if(a.action==='Recuperação')stats[id].recoveries++;});
+                // Minutos: calculados automaticamente pelo cronómetro e pelas substituições.
+                const durationSeconds=Math.max(0,Number(g.gameTime||0)); const subs=g.substitutions||[]; const selected=g.selectedPlayerIds||[]; const starters=new Set(g.starterIds||[]);
+                selected.forEach(id=>{
+                    if(!stats[id])return;
+                    const out=subs.find(s=>s.outId===id); const inn=subs.find(s=>s.inId===id);
+                    let seconds=0;
+                    if(starters.has(id)){ seconds=out ? Math.max(0,Number(out.gameTimeSeconds ?? (out.minute||0)*60)) : durationSeconds; }
+                    else if(inn){ seconds=Math.max(0,durationSeconds-Number(inn.gameTimeSeconds ?? (inn.minute||0)*60)); }
+                    stats[id].minutes+=Math.round(seconds/60);
+                });
+            });
+            const rows=Object.values(stats).filter(x=>x.games||x.actions).sort((a,b)=>b.actions-a.actions);
+            body.innerHTML=rows.length?rows.map(x=>`<tr><td><strong>${escapeHtml(x.name)}</strong></td><td>${x.games}</td><td>${x.starts}</td><td>${x.minutes}</td><td><strong>${x.actions}</strong></td><td>${x.goals}</td><td>${x.assists}</td><td>${x.shots}</td><td>${x.onTarget}</td><td>${x.recoveries}</td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:#999;">Ainda não existem estatísticas nesta época.</td></tr>';
+            const totals=rows.reduce((a,x)=>{a.games+=x.games;a.minutes+=x.minutes;a.actions+=x.actions;a.goals+=x.goals;a.assists+=x.assists;return a},{games:0,minutes:0,actions:0,goals:0,assists:0});
+            if(summary)summary.innerHTML=`<div style="background:#f0f4ff;padding:12px;border-radius:8px;">📅 <strong>${escapeHtml(getSeasonName(seasonId))}</strong> · ${history.length} jogo(s) · ${rows.length} atleta(s) com dados</div>`;
+            if(dash)dash.innerHTML=`<div class="dashboard-card"><div class="big">${history.length}</div><div class="small">Jogos</div></div><div class="dashboard-card"><div class="big">${totals.goals}</div><div class="small">Golos</div></div><div class="dashboard-card"><div class="big">${totals.assists}</div><div class="small">Assistências</div></div><div class="dashboard-card"><div class="big">${totals.actions}</div><div class="small">Ações</div></div><div class="dashboard-card"><div class="big">${totals.minutes}</div><div class="small">Minutos atleta</div></div>`;
+        }
+
+
+        // ===== HISTÓRICO =====
+        function saveGameToHistory() {
+            let history = [];
+            try { history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]'); } catch(e) { history = []; }
+            if (!Array.isArray(history)) history = [];
+            if (!gameState || typeof gameState !== 'object') return;
+            gameState = normalizeGameState(gameState);
+            if (!gameState.id) gameState.id = 'game_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+            const snapshot = { ...gameState, savedAt: new Date().toISOString(), folderId: gameState.folderId || null, seasonId: gameState.seasonId || null, competition: gameState.competition || '' };
+            const existing = history.findIndex(g => g && String(g.id) === String(snapshot.id));
+            if (existing >= 0) history[existing] = snapshot;
+            else history.push(snapshot);
+            localStorage.setItem(GAMES_KEY, JSON.stringify(history));
+        }
+
+        function migrateGameHistory() {
+            let history = [];
+            try { history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]'); } catch(e) { history = []; }
+            if (!Array.isArray(history)) history = [];
+            let changed = false;
+            history = history.map((game, i) => {
+                const g = normalizeGameState(game) || {};
+                if (!g.id || String(g.id).trim() === '') { g.id = 'game_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2,7); changed = true; }
+                if (!g.savedAt) { g.savedAt = g.gameDate || new Date().toISOString(); changed = true; }
+                if (!Array.isArray(g.actions)) { g.actions = []; changed = true; }
+                if (!Array.isArray(g.players)) { g.players = []; changed = true; }
+                return g;
+            });
+            if (changed) localStorage.setItem(GAMES_KEY, JSON.stringify(history));
+            return history;
+        }
+
+        function loadGameHistory() {
+            updateFolderSelector();
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+            let filtered = history.map((game, originalIndex) => ({game, originalIndex}));
+            const filter = selectedFolderId || document.getElementById('folderFilter')?.value || 'all';
+            if (filter !== 'all') filtered = filtered.filter(item => filter === 'none' ? !item.game.folderId : item.game.folderId === filter);
+            const folder = gameFolders.find(f => f.id === filter);
+            const summary = document.getElementById('folderSummary');
+            if (summary) summary.innerHTML = filter === 'all' ? `<div style="background:#f0f4ff;padding:12px;border-radius:8px;color:#555;">📁 <strong>Todos os jogos</strong> · ${history.length} jogo(s)</div>` : `<div style="background:#f0f4ff;padding:12px;border-radius:8px;color:#555;">📂 <strong>${escapeHtml(folder ? folder.name : 'Sem pasta')}</strong> · ${filtered.length} jogo(s)</div>`;
+            const listHtml = filtered.map(({game, originalIndex}) => {
+                const date = new Date(game.gameDate).toLocaleDateString('pt-PT');
+                const time = Math.floor(game.gameTime / 60) + ' min';
+                const gameName = game.gameName || 'Jogo sem nome';
+                const resultDisplay = game.gameResult ? `<div style="color:#48bb78;font-weight:600;">🎯 ${escapeHtml(game.gameResult)}</div>` : '';
+                return `<div class="game-card"><div class="game-card-title">${escapeHtml(gameName)}</div>${resultDisplay}<div class="game-card-info">${date} - ${time} (${game.actions.length} ações)</div><div class="game-card-info" style="font-size:.85em;margin-top:5px;">${game.players.length} jogadoras | ${game.actions.length} ações</div><div style="margin-top:8px;color:#00A041;font-size:.85em;font-weight:600;">📂 ${escapeHtml(getFolderName(game.folderId))}</div><div class="game-card-actions"><button class="btn btn-info btn-small" onclick="loadGame(${originalIndex})">Carregar</button><button class="btn btn-success btn-small" onclick="moveGameToFolder(${originalIndex})">📂 Mover</button><button class="btn btn-primary btn-small" onclick="exportGamePDF(${originalIndex})">PDF</button><button class="btn btn-danger btn-small" onclick="deleteGame(${originalIndex})">Deletar</button></div></div>`;
+            }).reverse().join('');
+            document.getElementById('gameHistoryList').innerHTML = listHtml || '<p style="color:#999;text-align:center;">Sem jogos nesta pasta</p>';
+        }
+
+        function normalizeGameState(game) {
+            if (!game || typeof game !== 'object') return null;
+            game.id = game.id || ('game_' + Date.now());
+            game.gameName = game.gameName || ''; game.gameResult = game.gameResult || ''; game.competition = game.competition || '';
+            game.players = Array.isArray(game.players) ? game.players : [];
+            game.selectedPlayerIds = Array.isArray(game.selectedPlayerIds) ? game.selectedPlayerIds : [];
+            game.starterIds = Array.isArray(game.starterIds) ? game.starterIds : [];
+            game.actions = Array.isArray(game.actions) ? game.actions : [];
+            game.customActions = Array.isArray(game.customActions) ? game.customActions : [];
+            game.substitutions = Array.isArray(game.substitutions) ? game.substitutions : [];
+            game.gameStarted = Boolean(game.gameStarted);
+            game.gameEnded = Boolean(game.gameEnded) || game.period === 'finalizado';
+            game.gameTime = Number.isFinite(Number(game.gameTime)) ? Number(game.gameTime) : 0;
+            game.startTime = Number.isFinite(Number(game.startTime)) ? Number(game.startTime) : 0;
+            game.period = game.period || 'parado'; game.selectedAction = game.selectedAction || null;
+            game.folderId = game.folderId || null; game.seasonId = game.seasonId || null; game.notes = game.notes || '';
+            game.gameDate = game.gameDate || new Date().toISOString();
+            return game;
+        }
+
+        function loadGameById(gameId) {
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+            const index = history.findIndex(g => g && String(g.id) === String(gameId));
+            if (index < 0) { alert('❌ Não foi possível encontrar este jogo.'); return; }
+            loadGame(index);
+        }
+
+        function loadGame(index) {
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+            if (!Number.isInteger(Number(index)) || !history[Number(index)]) {
+                alert('❌ Não foi possível encontrar este jogo.');
+                return;
+            }
+            const rawGame = history[Number(index)];
+            gameState = normalizeGameState(rawGame);
+            if (!gameState) { alert('❌ Os dados deste jogo estão inválidos.'); return; }
+            if (!gameState.seasonId && seasons.length) gameState.seasonId = seasons[seasons.length - 1].id;
+            gameState.substitutions = gameState.substitutions.map(s => ({...s, gameTimeSeconds: Number.isFinite(Number(s.gameTimeSeconds)) ? Number(s.gameTimeSeconds) : Math.max(0, Number(s.minute || 0) * 60)}));
+            syncGamePlayersFromRoster();
+            saveData();
+            const gameNameEl = document.getElementById('gameName');
+            const gameResultEl = document.getElementById('gameResult');
+            const competitionEl = document.getElementById('gameCompetition');
+            if (gameNameEl) gameNameEl.value = gameState.gameName;
+            if (gameResultEl) gameResultEl.value = gameState.gameResult;
+            if (competitionEl) competitionEl.value = gameState.competition;
+            updateCurrentGameFolderSelector();
+            updateSeasonSelectors();
+            renderPlayers();
+            renderGameSquadSelector();
+            renderSubstitutionControls();
+            updatePlayerSelectors();
+            renderActions();
+            renderCustomActionsList();
+            updateRecentActions();
+            updateLiveStats();
+            updateGameHeader();
+            updateTimer();
+            if (gameState.gameStarted && (gameState.period === 'primeira' || gameState.period === 'segunda') && !gameState.gameEnded) {
+                startTimer();
+                const startBtn = document.getElementById('startBtn'); if (startBtn) startBtn.style.display = 'none';
+                const halfBtn = document.getElementById('halfBtn'); if (halfBtn) halfBtn.style.display = 'block';
+                const finishBtn = document.getElementById('finishGameBtn'); if (finishBtn) finishBtn.style.display = 'block';
+            } else {
+                clearInterval(timerInterval);
+                const finishBtn = document.getElementById('finishGameBtn'); if (finishBtn) finishBtn.style.display = 'none';
+                const startBtn = document.getElementById('startBtn'); if (startBtn) startBtn.style.display = gameState.gameEnded ? 'none' : 'block';
+                const resumeBtn = document.getElementById('resumeBtn'); if (resumeBtn) resumeBtn.style.display = (gameState.period === 'intervalo' && !gameState.gameEnded) ? 'block' : 'none';
+            }
+            hideGameHome();
+            saveGameToHistory();
+            alert('✅ Jogo carregado! Podes continuar a editar.');
+        }
+
+        function moveGameToFolder(index) {
+            if (gameFolders.length === 0) { alert('📁 Primeiro cria uma pasta.'); return; }
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+            const game = history[index]; if (!game) return;
+            const options = gameFolders.map((f,i) => `${i+1}. ${f.name}`).join('\n');
+            const answer = prompt(`Escolhe a pasta para "${game.gameName || 'Jogo sem nome'}":\n\n${options}\n\nNúmero da pasta:`);
+            if (answer === null) return;
+            const n = parseInt(answer,10);
+            if (!n || n < 1 || n > gameFolders.length) { alert('❌ Pasta inválida.'); return; }
+            game.folderId = gameFolders[n-1].id;
+            localStorage.setItem(GAMES_KEY, JSON.stringify(history));
+            if (gameState.id === game.id) { gameState.folderId = game.folderId; saveData(); updateCurrentGameFolderSelector();
+            updateSeasonSelectors();
+            renderSeasonStats(); }
+            loadGameHistory();
+        }
+
+        function deleteGame(index) {
+            if (confirm('Tens a certeza que queres deletar este jogo?')) {
+                let history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+                history.splice(index, 1);
+                localStorage.setItem(GAMES_KEY, JSON.stringify(history));
+                loadGameHistory();
+            }
+        }
+
+        // ===== NOTAS =====
+        function saveNotes() {
+            gameState.notes = document.getElementById('gameNotes').value;
+            saveData();
+            alert('✅ Notas guardadas!');
+        }
+
+        // ===== EXPORT PDF =====
+        // Exportação melhorada: mantém toda a dinâmica da aplicação,
+        // mas gera o PDF diretamente com jsPDF para controlar melhor
+        // páginas, tabelas, cabeçalhos e quebras de conteúdo.
+
+        function pdfEscape(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function pdfFormatPeriod(period) {
+            const periods = {
+                primeira: '1ª Parte',
+                intervalo: 'Intervalo',
+                segunda: '2ª Parte',
+                parado: 'Parado'
+            };
+            return periods[period] || period || '-';
+        }
+
+        function pdfFormatTime(seconds) {
+            const total = Math.max(0, Number(seconds) || 0);
+            const mins = Math.floor(total / 60);
+            const secs = total % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function pdfSafeFileName(name) {
+            return String(name || 'Jogo')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9-_]+/g, '_')
+                .replace(/^_+|_+$/g, '')
+                .substring(0, 80) || 'Jogo';
+        }
+
+        // ===== MOTOR DE PDF — RELATÓRIO PROFISSIONAL =====
+        const PDF = {
+            green: [0, 160, 65],
+            darkGreen: [0, 112, 46],
+            lightGreen: [232, 247, 237],
+            ink: [35, 35, 35],
+            text: [75, 75, 75],
+            muted: [120, 120, 120],
+            line: [224, 228, 226],
+            soft: [247, 249, 248],
+            amber: [238, 174, 47],
+            amberSoft: [255, 248, 225],
+            white: [255, 255, 255]
+        };
+
+        function pdfSetColor(pdf, type, target = 'text') {
+            const c = PDF[type] || PDF.text;
+            const method = target === 'fill' ? 'setFillColor' : target === 'draw' ? 'setDrawColor' : 'setTextColor';
+            pdf[method](...c);
+        }
+
+        function pdfAddPageHeader(pdf, state, pageNumber, sectionLabel = 'RELATÓRIO DE JOGO') {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const date = new Date(state.gameDate).toLocaleDateString('pt-PT');
+
+            pdf.setFillColor(...PDF.green);
+            pdf.rect(0, 0, pageWidth, 18, 'F');
+            pdf.setFillColor(...PDF.darkGreen);
+            pdf.rect(0, 15.5, pageWidth, 2.5, 'F');
+
+            pdf.setTextColor(...PDF.white);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(9);
+            pdf.text('SOCCER STAT TRACKER PRO', 12, 8.5);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7.5);
+            pdf.text(sectionLabel, 12, 14);
+
+            pdf.setFontSize(7.5);
+            pdf.text(`${state.gameName || 'Jogo sem nome'}  •  ${date}`, pageWidth - 12, 9, { align: 'right' });
+
+            pdf.setTextColor(...PDF.muted);
+            pdf.text(`Página ${pageNumber}`, pageWidth - 12, 289, { align: 'right' });
+            pdf.setDrawColor(...PDF.line);
+            pdf.setLineWidth(0.25);
+            pdf.line(12, 283, pageWidth - 12, 283);
+        }
+
+        function pdfSectionTitle(pdf, title, y, kicker = '') {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            if (kicker) {
+                pdf.setTextColor(...PDF.green);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(7);
+                pdf.text(kicker.toUpperCase(), 12, y);
+                y += 5;
+            }
+            pdf.setTextColor(...PDF.ink);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(13);
+            pdf.text(title, 12, y);
+            pdf.setDrawColor(...PDF.green);
+            pdf.setLineWidth(0.7);
+            pdf.line(12, y + 4, pageWidth - 12, y + 4);
+            return y + 12;
+        }
+
+        function pdfEnsureSpace(pdf, y, needed, state, pageNumberRef, sectionLabel = 'RELATÓRIO DE JOGO') {
+            if (y + needed <= 278) return y;
+            pdf.addPage();
+            pageNumberRef.value++;
+            pdfAddPageHeader(pdf, state, pageNumberRef.value, sectionLabel);
+            return 28;
+        }
+
+        function pdfMetricCard(pdf, x, y, width, height, label, value, accent = 'green') {
+            pdf.setFillColor(...PDF.white);
+            pdf.setDrawColor(...PDF.line);
+            pdf.roundedRect(x, y, width, height, 2.5, 2.5, 'FD');
+            pdf.setFillColor(...(PDF[accent] || PDF.green));
+            pdf.roundedRect(x, y, 2.5, height, 1.2, 1.2, 'F');
+
+            pdf.setTextColor(...PDF.muted);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(6.8);
+            pdf.text(label.toUpperCase(), x + 7, y + 7);
+
+            pdf.setTextColor(...PDF.ink);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(14);
+            pdf.text(String(value), x + 7, y + 17);
+        }
+
+        function pdfPill(pdf, x, y, text, fill = PDF.lightGreen, color = PDF.darkGreen, width = null) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7.5);
+            const w = width || Math.max(24, pdf.getTextWidth(text) + 10);
+            pdf.setFillColor(...fill);
+            pdf.roundedRect(x, y - 5.5, w, 9, 2, 2, 'F');
+            pdf.setTextColor(...color);
+            pdf.text(text, x + w / 2, y + 0.5, { align: 'center' });
+            return w;
+        }
+
+        function pdfDrawTable(pdf, columns, rows, options, state, pageNumberRef) {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const margin = options.margin || 12;
+            const tableWidth = options.width || (pageWidth - margin * 2);
+            const baseRowHeight = options.rowHeight || 7;
+            const headerHeight = options.headerHeight || 9;
+            const fontSize = options.fontSize || 8;
+            const totalWidth = columns.reduce((sum, c) => sum + c.width, 0);
+            const scale = tableWidth / totalWidth;
+            const widths = columns.map(c => c.width * scale);
+            let y = options.y;
+
+            function drawHeader() {
+                pdf.setFillColor(...PDF.green);
+                pdf.rect(margin, y, tableWidth, headerHeight, 'F');
+                let x = margin;
+                pdf.setTextColor(...PDF.white);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(fontSize);
+                columns.forEach((column, i) => {
+                    pdf.text(String(column.title), x + 3, y + 6, { maxWidth: widths[i] - 6 });
+                    x += widths[i];
+                });
+                y += headerHeight;
+            }
+
+            drawHeader();
+
+            rows.forEach((row, rowIndex) => {
+                const cells = columns.map(column => {
+                    const raw = typeof column.value === 'function' ? column.value(row) : row[column.key];
+                    return String(raw ?? '-');
+                });
+                const wrapped = cells.map((cell, i) => pdf.splitTextToSize(cell, Math.max(widths[i] - 6, 10)));
+                const lines = Math.max(...wrapped.map(v => v.length), 1);
+                const rowHeight = Math.max(baseRowHeight, lines * 4 + 3);
+
+                if (y + rowHeight > 278) {
+                    pdf.addPage();
+                    pageNumberRef.value++;
+                    pdfAddPageHeader(pdf, state, pageNumberRef.value);
+                    y = 28;
+                    drawHeader();
+                }
+
+                if (rowIndex % 2 === 0) {
+                    pdf.setFillColor(...PDF.soft);
+                    pdf.rect(margin, y, tableWidth, rowHeight, 'F');
+                }
+
+                pdf.setDrawColor(...PDF.line);
+                pdf.setLineWidth(0.2);
+                pdf.rect(margin, y, tableWidth, rowHeight, 'S');
+
+                let x = margin;
+                pdf.setTextColor(...PDF.text);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(fontSize);
+                wrapped.forEach((linesForCell, i) => {
+                    linesForCell.forEach((line, lineIndex) => pdf.text(line, x + 3, y + 4.5 + lineIndex * 4));
+                    x += widths[i];
+                    if (i < columns.length - 1) {
+                        pdf.setDrawColor(...PDF.line);
+                        pdf.line(x, y, x, y + rowHeight);
+                    }
+                });
+                y += rowHeight;
+            });
+            return y + 5;
+        }
+
+        function pdfDrawProgressBar(pdf, x, y, width, value, max, label, count) {
+            const pct = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
+            pdf.setTextColor(...PDF.text);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(8);
+            pdf.text(label, x, y);
+            pdf.setTextColor(...PDF.muted);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(String(count), x + width, y, { align: 'right' });
+            pdf.setFillColor(...PDF.line);
+            pdf.roundedRect(x, y + 3, width, 3.5, 1.5, 1.5, 'F');
+            if (pct > 0) {
+                pdf.setFillColor(...PDF.green);
+                pdf.roundedRect(x, y + 3, Math.max(2, width * pct), 3.5, 1.5, 1.5, 'F');
+            }
+        }
+
+        function pdfWrapNotes(pdf, notes, width) {
+            return pdf.splitTextToSize(String(notes || '').trim(), width);
+        }
+
+        function exportPDF() {
+            const exportState = JSON.parse(JSON.stringify(gameState));
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageNumberRef = { value: 1 };
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const date = new Date(exportState.gameDate).toLocaleDateString('pt-PT');
+            const duration = pdfFormatTime(exportState.gameTime);
+            const actions = Array.isArray(exportState.actions) ? exportState.actions : [];
+            const players = Array.isArray(exportState.players) ? exportState.players : [];
+
+            const stats = {};
+            const actionCounts = {};
+            actions.forEach(a => {
+                if (!stats[a.player]) stats[a.player] = {};
+                stats[a.player][a.action] = (stats[a.player][a.action] || 0) + 1;
+                actionCounts[a.action] = (actionCounts[a.action] || 0) + 1;
+            });
+
+            const sortedActions = Object.entries(actionCounts).sort((a, b) => b[1] - a[1]);
+            const shots = actionCounts['Remate'] || 0;
+            const onTarget = actionCounts['Remate Enquadrado'] || 0;
+            const recoveries = actionCounts['Recuperação'] || 0;
+            const assists = actionCounts['Assistência'] || 0;
+            const firstHalf = actions.filter(a => a.period === 'primeira').length;
+            const secondHalf = actions.filter(a => a.period === 'segunda').length;
+            const actionsPerMinute = exportState.gameTime > 0 ? actions.length / (exportState.gameTime / 60) : 0;
+
+            // ===== PÁGINA 1 — CAPA EXECUTIVA =====
+            pdfAddPageHeader(pdf, exportState, pageNumberRef.value, 'MATCH ANALYSIS');
+            let y = 35;
+
+            pdf.setTextColor(...PDF.muted);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7);
+            pdf.text('MATCH REPORT', 12, y);
+            y += 8;
+
+            pdf.setTextColor(...PDF.ink);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(25);
+            const titleLines = pdf.splitTextToSize(exportState.gameName || 'Jogo sem nome', pageWidth - 24);
+            pdf.text(titleLines, 12, y);
+            y += titleLines.length * 9;
+
+            if (exportState.gameResult) {
+                const pillWidth = Math.max(48, pdf.getTextWidth(`RESULTADO  ${exportState.gameResult}`) + 14);
+                pdfPill(pdf, 12, y + 2, `RESULTADO  ${exportState.gameResult}`, PDF.lightGreen, PDF.darkGreen, pillWidth);
+                y += 13;
+            }
+
+            pdf.setTextColor(...PDF.muted);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8.5);
+            pdf.text(`${date}  •  ${duration}  •  ${actions.length} ações registadas`, 12, y);
+            y += 13;
+
+            y = pdfSectionTitle(pdf, 'Snapshot do Jogo', y, '01  •  VISÃO GERAL');
+            const gap = 5;
+            const cardWidth = (pageWidth - 24 - gap * 3) / 4;
+            pdfMetricCard(pdf, 12, y, cardWidth, 25, 'Jogadoras', players.length);
+            pdfMetricCard(pdf, 12 + cardWidth + gap, y, cardWidth, 25, 'Ações', actions.length);
+            pdfMetricCard(pdf, 12 + (cardWidth + gap) * 2, y, cardWidth, 25, 'Duração', duration);
+            pdfMetricCard(pdf, 12 + (cardWidth + gap) * 3, y, cardWidth, 25, 'Ações/min', actionsPerMinute.toFixed(2));
+            y += 36;
+
+            y = pdfSectionTitle(pdf, 'Perfil de Ações', y, '02  •  VOLUME');
+            if (sortedActions.length) {
+                const maxAction = sortedActions[0][1];
+                sortedActions.slice(0, 8).forEach(([name, count]) => {
+                    pdfDrawProgressBar(pdf, 12, y, pageWidth - 24, count, maxAction, name, count);
+                    y += 12;
+                });
+            } else {
+                pdf.setTextColor(...PDF.muted);
+                pdf.setFontSize(9);
+                pdf.text('Sem ações registadas.', 12, y);
+                y += 10;
+            }
+
+            y = pdfEnsureSpace(pdf, y, 52, exportState, pageNumberRef, 'MATCH ANALYSIS');
+            y = pdfSectionTitle(pdf, 'Indicadores-Chave', y, '03  •  LEITURA RÁPIDA');
+            const metricY = y;
+            const halfGap = 5;
+            const halfWidth = (pageWidth - 24 - halfGap) / 2;
+            pdfMetricCard(pdf, 12, metricY, halfWidth, 24, 'Remates', shots, 'green');
+            pdfMetricCard(pdf, 12 + halfWidth + halfGap, metricY, halfWidth, 24, 'Enquadrados', onTarget, 'green');
+            pdfMetricCard(pdf, 12, metricY + 29, halfWidth, 24, 'Recuperações', recoveries, 'green');
+            pdfMetricCard(pdf, 12 + halfWidth + halfGap, metricY + 29, halfWidth, 24, 'Assistências', assists, 'green');
+
+            // ===== PÁGINA 2 — PERFIL INDIVIDUAL =====
+            pdf.addPage();
+            pageNumberRef.value++;
+            pdfAddPageHeader(pdf, exportState, pageNumberRef.value, 'PLAYER PERFORMANCE');
+            y = 31;
+            y = pdfSectionTitle(pdf, 'Performance por Jogadora', y, '04  •  INDIVIDUAL');
+
+            const playerRows = players.map(player => {
+                const name = player.name || player;
+                const s = stats[name] || {};
+                const total = Object.values(s).reduce((a, b) => a + b, 0);
+                const efficiency = total ? ((s['Remate Enquadrado'] || 0) + (s['Assistência'] || 0)) / total * 100 : 0;
+                return {
+                    player: name,
+                    shots: s['Remate'] || 0,
+                    onTarget: s['Remate Enquadrado'] || 0,
+                    recoveries: s['Recuperação'] || 0,
+                    assists: s['Assistência'] || 0,
+                    total,
+                    efficiency: `${efficiency.toFixed(1)}%`
+                };
+            }).sort((a, b) => b.total - a.total);
+
+            if (playerRows.length) {
+                y = pdfDrawTable(pdf, [
+                    { title: 'Jogadora', key: 'player', width: 63 },
+                    { title: 'Remates', key: 'shots', width: 23 },
+                    { title: 'Enq.', key: 'onTarget', width: 23 },
+                    { title: 'Recup.', key: 'recoveries', width: 23 },
+                    { title: 'Assist.', key: 'assists', width: 23 },
+                    { title: 'Total', key: 'total', width: 22 },
+                    { title: 'Efetiv.', key: 'efficiency', width: 23 }
+                ], playerRows, { y, fontSize: 7.2, rowHeight: 9 }, exportState, pageNumberRef);
+            } else {
+                pdf.setTextColor(...PDF.muted);
+                pdf.text('Não existem jogadoras registadas.', 12, y);
+                y += 10;
+            }
+
+            y = pdfEnsureSpace(pdf, y, 55, exportState, pageNumberRef, 'PLAYER PERFORMANCE');
+            y = pdfSectionTitle(pdf, 'Distribuição por Jogadora', y, '05  •  PARTICIPAÇÃO');
+
+            if (playerRows.length) {
+                const maxTotal = Math.max(...playerRows.map(p => p.total), 1);
+                playerRows.slice(0, 10).forEach(p => {
+                    pdfDrawProgressBar(pdf, 12, y, pageWidth - 24, p.total, maxTotal, p.player, p.total);
+                    y += 12;
+                });
+            }
+
+            y = pdfEnsureSpace(pdf, y, 48, exportState, pageNumberRef, 'PLAYER PERFORMANCE');
+            y = pdfSectionTitle(pdf, 'Leitura Quantitativa', y, '06  •  INDICADORES');
+            const playerIndicators = playerRows.length ? [
+                ['Jogadora com mais ações', playerRows[0].player],
+                ['Volume máximo individual', playerRows[0].total],
+                ['Média de ações/jogadora', (actions.length / Math.max(players.length, 1)).toFixed(1)],
+                ['Taxa de remates enquadrados', shots ? `${((onTarget / shots) * 100).toFixed(1)}%` : '0.0%']
+            ] : [['Jogadoras', 0]];
+            y = pdfDrawTable(pdf,
+                [{ title: 'Indicador', key: 'label', width: 130 }, { title: 'Valor', key: 'value', width: 50 }],
+                playerIndicators.map(v => ({ label: v[0], value: v[1] })),
+                { y, fontSize: 8.2, rowHeight: 9 }, exportState, pageNumberRef);
+
+            // ===== PÁGINA 3 — CRONOGRAMA =====
+            pdf.addPage();
+            pageNumberRef.value++;
+            pdfAddPageHeader(pdf, exportState, pageNumberRef.value, 'ACTION TIMELINE');
+            y = 31;
+            y = pdfSectionTitle(pdf, 'Cronograma de Ações', y, '07  •  LINHA TEMPORAL');
+
+            const timelineRows = actions.map((a, index) => ({
+                n: index + 1,
+                time: pdfFormatTime(a.time),
+                period: pdfFormatPeriod(a.period),
+                player: a.player,
+                action: a.action
+            }));
+
+            if (timelineRows.length) {
+                y = pdfDrawTable(pdf,
+                    [
+                        { title: '#', key: 'n', width: 12 },
+                        { title: 'Tempo', key: 'time', width: 24 },
+                        { title: 'Período', key: 'period', width: 35 },
+                        { title: 'Jogadora', key: 'player', width: 58 },
+                        { title: 'Ação', key: 'action', width: 51 }
+                    ], timelineRows,
+                    { y, fontSize: 7.2, rowHeight: 8 }, exportState, pageNumberRef);
+            } else {
+                pdf.setTextColor(...PDF.muted);
+                pdf.text('Não existem ações registadas.', 12, y);
+                y += 10;
+            }
+
+            // ===== NOTAS / LEITURA QUALITATIVA =====
+            if (exportState.notes && exportState.notes.trim()) {
+                y = pdfEnsureSpace(pdf, y, 50, exportState, pageNumberRef, 'QUALITATIVE NOTES');
+                y = pdfSectionTitle(pdf, 'Notas do Jogo', y, '08  •  OBSERVAÇÕES');
+                const notes = pdfWrapNotes(pdf, exportState.notes, pageWidth - 34);
+                const lineHeight = 5;
+                const blockHeight = Math.max(25, notes.length * lineHeight + 12);
+                if (y + blockHeight > 278) {
+                    pdf.addPage();
+                    pageNumberRef.value++;
+                    pdfAddPageHeader(pdf, exportState, pageNumberRef.value, 'QUALITATIVE NOTES');
+                    y = 31;
+                    y = pdfSectionTitle(pdf, 'Notas do Jogo', y, '08  •  OBSERVAÇÕES');
+                }
+                pdf.setFillColor(...PDF.amberSoft);
+                pdf.setDrawColor(...PDF.amber);
+                pdf.roundedRect(12, y, pageWidth - 24, blockHeight, 2.5, 2.5, 'FD');
+                pdf.setTextColor(...PDF.text);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8.7);
+                notes.forEach((line, i) => pdf.text(line, 17, y + 9 + i * lineHeight));
+                y += blockHeight + 8;
+            }
+
+            // ===== PÁGINA FINAL — DASHBOARD =====
+            pdf.addPage();
+            pageNumberRef.value++;
+            pdfAddPageHeader(pdf, exportState, pageNumberRef.value, 'ANALYSIS DASHBOARD');
+            y = 31;
+            y = pdfSectionTitle(pdf, 'Dashboard Final', y, '09  •  SÍNTESE ESTATÍSTICA');
+
+            const dashboard = [
+                ['Total de ações', actions.length],
+                ['Ações na 1ª parte', firstHalf],
+                ['Ações na 2ª parte', secondHalf],
+                ['Ações por minuto', actionsPerMinute.toFixed(2)],
+                ['Remates', shots],
+                ['Remates enquadrados', onTarget],
+                ['Taxa de enquadramento', shots ? `${((onTarget / shots) * 100).toFixed(1)}%` : '0.0%'],
+                ['Recuperações', recoveries],
+                ['Assistências', assists]
+            ];
+
+            const dashGap = 5;
+            const dashW = (pageWidth - 24 - dashGap) / 2;
+            dashboard.forEach((item, i) => {
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const x = 12 + col * (dashW + dashGap);
+                const yy = y + row * 31;
+                pdfMetricCard(pdf, x, yy, dashW, 25, item[0], item[1]);
+            });
+            y += Math.ceil(dashboard.length / 2) * 31 + 5;
+
+            y = pdfEnsureSpace(pdf, y, 55, exportState, pageNumberRef, 'ANALYSIS DASHBOARD');
+            y = pdfSectionTitle(pdf, 'Distribuição das Ações', y, '10  •  PERFIL DO JOGO');
+            if (sortedActions.length) {
+                const maxAction = sortedActions[0][1];
+                sortedActions.forEach(([name, count]) => {
+                    y = pdfEnsureSpace(pdf, y, 12, exportState, pageNumberRef, 'ANALYSIS DASHBOARD');
+                    pdfDrawProgressBar(pdf, 12, y, pageWidth - 24, count, maxAction, name, count);
+                    y += 12;
+                });
+            }
+
+            y = pdfEnsureSpace(pdf, y, 42, exportState, pageNumberRef, 'ANALYSIS DASHBOARD');
+            pdf.setFillColor(...PDF.lightGreen);
+            pdf.setDrawColor(...PDF.green);
+            pdf.roundedRect(12, y, pageWidth - 24, 32, 3, 3, 'FD');
+            pdf.setTextColor(...PDF.darkGreen);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10);
+            pdf.text('Relatório gerado pelo Soccer Stat Tracker PRO', 18, y + 10);
+            pdf.setTextColor(...PDF.text);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.text('Documento baseado exclusivamente nos registos efetuados durante o jogo.', 18, y + 17);
+            pdf.text(`Gerado em ${new Date().toLocaleString('pt-PT')}`, 18, y + 24);
+
+            const fileDate = new Date(exportState.gameDate).toISOString().split('T')[0];
+            const fileName = `relatorio_scouting_${pdfSafeFileName(exportState.gameName || 'jogo')}_${fileDate}.pdf`;
+            pdf.save(fileName);
+        }
+
+        function exportGamePDF(index) {
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+            const game = history[history.length - 1 - index];
+
+            if (!game) {
+                alert('Jogo não encontrado.');
+                return;
+            }
+
+            const tempState = gameState;
+
+            // exportPDF cria o seu próprio snapshot, por isso podemos
+            // restaurar imediatamente o jogo atualmente aberto.
+            gameState = game;
+
+            try {
+                exportPDF();
+            } finally {
+                gameState = tempState;
+            }
+        }
+
+        function csvEscape(value) {
+            const text = String(value ?? '');
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        function exportAllGames() {
+            const history = JSON.parse(localStorage.getItem(GAMES_KEY) || '[]');
+
+            if (history.length === 0) {
+                alert('Sem jogos para exportar');
+                return;
+            }
+
+            // Mantém a exportação CSV existente, mas torna-a mais completa
+            // e compatível com Excel, incluindo BOM UTF-8 e informações do jogo.
+            const headers = [
+                'Data',
+                'Jogo',
+                'Resultado',
+                'Época',
+                'Competição',
+                'Jogadora',
+                'Ação',
+                'Tempo',
+                'Período'
+            ];
+
+            const rows = [headers.map(csvEscape).join(';')];
+
+            history.forEach(game => {
+                const date = new Date(game.gameDate).toLocaleDateString('pt-PT');
+                const gameName = game.gameName || 'Jogo sem nome';
+                const result = game.gameResult || '';
+
+                (game.actions || []).forEach(action => {
+                    rows.push([
+                        date,
+                        gameName,
+                        result,
+                        getSeasonName(game.seasonId),
+                        game.competition || '',
+                        action.player,
+                        action.action,
+                        pdfFormatTime(action.time),
+                        pdfFormatPeriod(action.period)
+                    ].map(csvEscape).join(';'));
+                });
+            });
+
+            const csvContent = '\uFEFF' + rows.join('\r\n');
+
+            const blob = new Blob([csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            link.href = url;
+            link.download = `soccer_stat_tracker_historico_${new Date().toISOString().split('T')[0]}.csv`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        // ===== MENU INICIAL DE JOGOS =====
+        function showGameHome() {
+            const overlay = document.getElementById('gameHomeOverlay');
+            if (!overlay) return;
+            overlay.style.display = 'block';
+            // Garante que o menu abre sempre na vista das pastas.
+            const mainView = document.getElementById('homeMainView');
+            const folderView = document.getElementById('homeFolderView');
+            if (mainView) mainView.style.display = 'block';
+            if (folderView) folderView.style.display = 'none';
+            try {
+                renderGameHome();
+            } catch (err) {
+                console.error('Erro ao carregar pastas no menu inicial:', err);
+                const grid = document.getElementById('homeFolderGrid');
+                if (grid) grid.innerHTML = '<div class="home-empty">Não foi possível atualizar as pastas. Usa o botão Menu Inicial para tentar novamente.</div>';
+            }
+        }
+
+        function hideGameHome() {
+            const overlay = document.getElementById('gameHomeOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        // Volta ao menu inicial sem terminar o jogo. Se o jogo estiver em curso,
+        // pede confirmação para evitar uma saída acidental durante o registo ao vivo.
+        function returnToGameHome() {
+            if (gameState.gameStarted && (gameState.period === 'primeira' || gameState.period === 'segunda')) {
+                const confirmed = confirm('⚠️ O jogo está em curso. Queres voltar ao Menu Inicial? O cronómetro continuará a contar e o jogo ficará guardado.');
+                if (!confirmed) return;
+                saveData();
+            } else {
+                saveData();
+            }
+            renderGameHome();
+            showGameHome();
+        }
+
+        function renderGameHome() {
+            const folders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
+            gameFolders = folders;
+            const history = migrateGameHistory();
+            const grid = document.getElementById('homeFolderGrid');
+            const count = document.getElementById('homeFolderCount');
+            if (!grid) return;
+
+            count.textContent = `${folders.length} pasta(s)`;
+            let cards = folders.map(folder => {
+                const total = history.filter(g => g.folderId === folder.id).length;
+                return `<div class="folder-card" onclick="openHomeFolder('${folder.id}')">
+                    <div class="folder-icon">📂</div>
+                    <h3>${escapeHtml(folder.name)}</h3>
+                    <p>${total} jogo(s)</p>
+                </div>`;
+            }).join('');
+
+            const noFolder = history.filter(g => !g.folderId).length;
+            cards += `<div class="folder-card no-folder" onclick="openHomeFolder('none')">
+                <div class="folder-icon">🗂️</div>
+                <h3>Sem pasta</h3>
+                <p>${noFolder} jogo(s)</p>
+            </div>`;
+            grid.innerHTML = cards;
+
+            const recent = history.map((game, index) => ({game, index})).sort((a,b) => new Date(b.game.savedAt || b.game.gameDate || 0) - new Date(a.game.savedAt || a.game.gameDate || 0)).slice(0,6);
+            document.getElementById('homeRecentGames').innerHTML = recent.length ? recent.map(item => homeGameCard(item.game, item.index)).join('') : '<div class="home-empty">Ainda não existem jogos guardados.</div>';
+            showHomeMain();
+        }
+
+        function homeGameCard(game, historyIndex) {
+            const date = game.gameDate ? new Date(game.gameDate).toLocaleDateString('pt-PT') : '-';
+            const folderName = getFolderName(game.folderId);
+            const idx = Number.isInteger(historyIndex) ? historyIndex : migrateGameHistory().findIndex(g => String(g.id) === String(game.id));
+            return `<div class="home-game-card">
+                <h3>⚽ ${escapeHtml(game.gameName || 'Jogo sem nome')}</h3>
+                <div class="home-game-meta">📅 ${date}<br>📂 ${escapeHtml(folderName)}<br>📊 ${(game.actions || []).length} ações · ${(game.players || []).length} jogadoras</div>
+                <div class="home-game-buttons">
+                    <button class="home-open" data-game-index="${idx}" onclick="openHistoricalGameFromHomeIndex(this.dataset.gameIndex); return false;">Abrir</button>
+                    <button class="home-delete" data-game-index="${idx}" onclick="deleteHomeGameByIndex(this.dataset.gameIndex); return false;">Eliminar</button>
+                </div>
+            </div>`;
+        }
+
+        function openHomeFolder(folderId) {
+            const history = migrateGameHistory();
+            const games = history.map((game,index)=>({game,index})).filter(item => folderId === 'none' ? !item.game.folderId : item.game.folderId === folderId);
+            const folder = gameFolders.find(f => f.id === folderId);
+            document.getElementById('homeMainView').style.display = 'none';
+            document.getElementById('homeFolderView').style.display = 'block';
+            document.getElementById('homeFolderTitle').textContent = folderId === 'none' ? '🗂️ Sem pasta' : `📂 ${folder ? folder.name : 'Pasta'}`;
+            document.getElementById('homeFolderGameCount').textContent = `${games.length} jogo(s)`;
+            document.getElementById('homeFolderGames').innerHTML = games.length ? games.map(item => homeGameCard(item.game, item.index)).join('') : `<div class="home-empty">Esta pasta ainda não tem jogos.<br><br><button class="home-open" style="padding:10px 16px;border:0;border-radius:8px;cursor:pointer;" onclick="homeCreateNewGame('${folderId}')">➕ Criar jogo nesta pasta</button></div>`;
+        }
+
+        function showHomeMain() {
+            document.getElementById('homeMainView').style.display = 'block';
+            document.getElementById('homeFolderView').style.display = 'none';
+        }
+
+        function openHistoricalGameFromHomeIndex(index) {
+            const history = migrateGameHistory();
+            const i = Number(index);
+            if (!Number.isInteger(i) || !history[i]) { alert('❌ Não foi possível encontrar este jogo.'); return; }
+            loadGame(i);
+        }
+
+        function openHistoricalGameFromHome(gameId) {
+            loadGameById(gameId);
+        }
+
+        function continueCurrentGame() {
+            hideGameHome();
+        }
+
+        function homeCreateFolder() {
+            createGameFolder();
+            renderGameHome();
+        }
+
+        function homeCreateNewGame(folderId) {
+            const targetFolder = (folderId && folderId !== 'none') ? folderId : null;
+            selectedFolderId = targetFolder || 'all';
+            createNewGame(targetFolder);
+            hideGameHome();
+        }
+
+        function deleteHomeGameByIndex(index) {
+            if (!confirm('Tens a certeza que queres eliminar este jogo?')) return;
+            const history = migrateGameHistory();
+            const i = Number(index);
+            if (!Number.isInteger(i) || !history[i]) return;
+            history.splice(i, 1);
+            localStorage.setItem(GAMES_KEY, JSON.stringify(history));
+            renderGameHome();
+            loadGameHistory();
+        }
+
+        function deleteHomeGame(gameId) {
+            const history = migrateGameHistory();
+            const i = history.findIndex(game => game && String(game.id) === String(gameId));
+            if (i >= 0) deleteHomeGameByIndex(i);
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        loadData();
+        migrateGameHistory();
+
+        // O menu inicial é carregado imediatamente após os dados persistidos.
+        // Assim, as pastas guardadas ficam visíveis logo ao abrir a aplicação,
+        // mesmo que algum módulo secundário tenha um erro de renderização.
+        showGameHome();
+
+        updateCurrentGameFolderSelector();
+            updateSeasonSelectors();
+            renderSeasonStats();
+        renderRoster();
+        renderGameSquadSelector();
+        renderSubstitutionControls();
+        renderPlayers();
+        renderActions();
+        renderCustomActionsList();
+        updatePlayerSelectors();
+        updateTimer();
+        renderActions();
+        if (gameState.gameStarted && (gameState.period === 'primeira' || gameState.period === 'segunda')) {
+            startTimer();
+            const startBtn=document.getElementById('startBtn'); if(startBtn) startBtn.style.display='none';
+            const halfBtn=document.getElementById('halfBtn'); if(halfBtn) halfBtn.style.display='block';
+        }
+        updateRecentActions();
+        updateLiveStats();
+        updateGameHeader();
+        loadGameHistory();
+        // Atualiza novamente o menu depois dos restantes módulos estarem prontos.
+        // showGameHome() volta a ler FOLDERS_KEY e GAMES_KEY do localStorage.
+        try { renderGameHome(); } catch (err) { console.error('Erro ao atualizar menu inicial:', err); }
+
+        // Atualizar UI ao trocar de tab
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab')) {
+                setTimeout(() => {
+                    if (e.target.textContent.includes('Análise')) {
+                        updateCharts();
+                    } else if (e.target.textContent.includes('Comparação')) {
+                        updateComparison();
+                    } else if (e.target.textContent.includes('Histórico')) {
+                        loadGameHistory();
+                    }
+                }, 100);
+            }
+        });
+
+        // Enter para adicionar jogadora
+        document.getElementById('playerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addPlayer();
+        });
+    </script>
+</body>
+</html>
